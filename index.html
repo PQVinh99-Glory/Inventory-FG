@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WHMFG PRO | By Vinh 4.4 (Supabase Edition)</title>
+    <title>WHMFG PRO | By Vinh 4.5 (Super Optimized Supabase)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-    <!-- THÊM THƯ VIỆN SUPABASE & CSV PARSER -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* GIỮ NGUYÊN CSS CŨ CỦA ANH VÀ THÊM CSS CHO MODAL */
         :root { --primary: #4f46e5; --bg-main: #f8fafc; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-main); color: #1e293b; }
         .glass-card { background: rgba(255, 255, 255, 0.9); border-radius: 24px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04); border: 1px solid rgba(241, 245, 249, 1); transition: all 0.4s; }
@@ -43,10 +41,10 @@
 
     <div id="loading">
         <div class="spinner"></div>
-        <p class="font-bold text-indigo-600 animate-pulse">HỆ THỐNG ĐANG ĐỒNG BỘ SUPABASE...</p>
+        <p class="font-bold text-indigo-600 animate-pulse">ĐANG TẢI DỮ LIỆU TỪ SUPABASE...</p>
     </div>
 
-    <!-- MODAL NHẬP KHO -->
+    <!-- MODAL NHẬP KHO (Đã tối ưu bỏ chọn WH vì lấy từ nguồn) -->
     <div id="modal-inbound" class="modal">
         <div class="bg-white p-6 rounded-2xl w-96 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
@@ -55,20 +53,13 @@
             </div>
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-slate-500">Mã Kho (WH)</label>
-                    <select id="inbound-wh" class="w-full mt-1 p-2 border rounded-xl bg-slate-50 outline-none">
-                        <option value="01">Kho 01</option>
-                        <option value="60">Kho 60</option>
-                    </select>
-                </div>
-                <div>
                     <label class="text-xs font-bold text-slate-500 flex justify-between">
                         <span>Vị Trí (Bin)</span>
                         <label class="flex items-center gap-1 cursor-pointer text-indigo-600">
-                            <input type="checkbox" id="lock-bin" class="rounded text-indigo-600"> Khóa Vị Trí
+                            <input type="checkbox" id="lock-bin" class="rounded text-indigo-600"> Khóa
                         </label>
                     </label>
-                    <input type="text" id="inbound-bin" class="w-full mt-1 p-2 border rounded-xl bg-slate-50 outline-none" placeholder="Quét vị trí...">
+                    <input type="text" id="inbound-bin" class="w-full mt-1 p-2 border rounded-xl bg-slate-50 outline-none font-bold" placeholder="Quét vị trí...">
                 </div>
                 <div>
                     <label class="text-xs font-bold text-slate-500">Mã Tag ID</label>
@@ -98,26 +89,25 @@
     <div id="modal-upload" class="modal">
         <div class="bg-white p-6 rounded-2xl w-[400px] shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black text-lg text-indigo-600 uppercase">Cập Nhật Database</h3>
+                <h3 class="font-black text-lg text-indigo-600 uppercase">Cập Nhật Data Nguồn</h3>
                 <button onclick="closeModal('modal-upload')" class="text-slate-400 hover:text-red-500 font-bold">X</button>
             </div>
             <div class="space-y-4">
                 <div class="p-4 border-2 border-dashed border-indigo-200 rounded-xl bg-indigo-50">
-                    <label class="block text-xs font-bold text-indigo-800 mb-2">1. File Master Data (Nguồn)</label>
+                    <label class="block text-xs font-bold text-indigo-800 mb-2">1. File Master Data (.csv)</label>
                     <input type="file" id="file-master" accept=".csv" class="text-xs w-full">
-                    <p class="text-[10px] text-slate-500 mt-1">Cột: tag_id, lp_no, feature, qty, stock_in_date, create_date</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Cột yêu cầu: tag_id, lp_no, qty, wh_location, create_date</p>
                 </div>
                 <div class="p-4 border-2 border-dashed border-blue-200 rounded-xl bg-blue-50">
-                    <label class="block text-xs font-bold text-blue-800 mb-2">2. File iScala</label>
+                    <label class="block text-xs font-bold text-blue-800 mb-2">2. File iScala (.csv)</label>
                     <input type="file" id="file-iscala" accept=".csv" class="text-xs w-full">
-                    <p class="text-[10px] text-slate-500 mt-1">Cột: feature, qty_iscala</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Cột yêu cầu: feature, qty_iscala</p>
                 </div>
-                <button onclick="uploadData()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl hover:bg-indigo-700">Tải Lên Hệ Thống</button>
+                <button onclick="uploadData()" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-xl hover:bg-indigo-700 shadow-lg active:scale-95 transition-transform">Tải Lên Hệ Thống</button>
             </div>
         </div>
     </div>
 
-    <!-- HEADER GIỮ NGUYÊN THEO YÊU CẦU -->
     <header class="flex justify-between items-end mb-10">
         <div>
             <div class="flex items-center gap-2 mb-1">
@@ -145,7 +135,6 @@
         </div>
     </header>
 
-    <!-- HTML HIỂN THỊ KPI / BIỂU ĐỒ BÊN DƯỚI GIỮ NGUYÊN -->
     <section class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-10">
         <div class="glass-card kpi-card p-6 border-b-4 border-indigo-500 animate-kpi" style="animation-delay: 0.1s">
             <p class="text-xs font-extrabold text-slate-400 uppercase mb-2">Tổng Tồn Kho</p>
@@ -229,9 +218,11 @@
     </section>
 
     <div class="glass-card overflow-hidden">
-        <div class="flex p-4 justify-between bg-white border-b">
+        <div class="flex p-4 justify-between bg-white border-b items-center">
             <h2 class="text-xl font-extrabold text-slate-800 tracking-tight uppercase">Chi tiết tồn kho</h2>
-            <input type="text" id="filter-input" placeholder="Tìm kiếm nhanh..." class="px-4 py-2 border rounded-xl w-64 text-sm outline-none bg-slate-50">
+            <div class="flex gap-2">
+                <input type="text" id="filter-input" placeholder="Tìm kiếm nhanh..." class="px-4 py-2 border rounded-xl w-64 text-sm outline-none bg-slate-50">
+            </div>
         </div>
         <div class="table-container overflow-x-auto max-h-[650px]">
             <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
@@ -245,10 +236,10 @@
 
     <script>
         // ========================================================
-        // 1. CẤU HÌNH SUPABASE (ANH ĐIỀN THÔNG TIN CỦA ANH VÀO ĐÂY)
+        // 1. CẤU HÌNH SUPABASE
         // ========================================================
-        const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-        const SUPABASE_KEY = 'YOUR_ANON_KEY';
+        const SUPABASE_URL = 'https://dhlpkycpkndfdgnbdcwn.supabase.co/rest/v1/'; // ĐIỀN URL CỦA ANH VÀO ĐÂY
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRobHBreWNwa25kZmRnbmJkY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwODM2NDgsImV4cCI6MjA5NTY1OTY0OH0.aVbFpwZj6_zYlTqHYds27f9Q7brZn8Ti-0VUOFRuslE'; // ĐIỀN KEY CỦA ANH VÀO ĐÂY
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let rawData = [];
@@ -260,7 +251,7 @@
         // ========================================================
         supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, payload => {
-                console.log('Có thay đổi từ kho, đang tải lại...', payload);
+                console.log('Có thay đổi từ kho, đang tải lại...');
                 fetchData();
             })
             .subscribe();
@@ -268,17 +259,22 @@
         window.onload = function() { fetchData(); };
 
         // ========================================================
-        // 3. LOGIC LẤY DỮ LIỆU TỪ VIEW THẦN TỐC (GIỐNG GAS CŨ)
+        // 3. LOGIC LẤY DỮ LIỆU CỰC NHANH TỪ 2 VIEW SQL
         // ========================================================
         async function fetchData() {
             document.getElementById('loading').style.display = 'flex';
             try {
-                // Gọi tới View đã ánh xạ sẵn VLOOKUP
-                const { data, error } = await supabase.from('vw_kho_thanh_pham').select('*');
-                if (error) throw error;
+                // Tận dụng SQL gọi đồng thời 2 View (Bảng chi tiết & Bảng tổng kết Pivot)
+                const [detailRes, summaryRes] = await Promise.all([
+                    supabase.from('vw_kho_thanh_pham').select('*'),
+                    supabase.from('vw_summary_analysis').select('*')
+                ]);
                 
-                rawData = data;
-                summaryData = processSummaryData(data); // Phân tích iScala vs Actual
+                if (detailRes.error) throw detailRes.error;
+                if (summaryRes.error) throw summaryRes.error;
+                
+                rawData = detailRes.data;
+                summaryData = summaryRes.data;
                 
                 document.getElementById('last-update').innerText = new Date().toLocaleTimeString('vi-VN');
                 initDashboard();
@@ -288,19 +284,6 @@
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
-        }
-
-        // Tái tạo thuật toán tính tổng Actual và iScala dựa vào dữ liệu View
-        function processSummaryData(data) {
-            let map = {};
-            data.forEach(r => {
-                const feat = r.colB;
-                if(feat && feat !== 'No data') {
-                    if(!map[feat]) map[feat] = { feature: feat, actual: 0, iscala: Number(r.colD) || 0 };
-                    map[feat].actual += Number(r.colC) || 0;
-                }
-            });
-            return Object.values(map);
         }
 
         // ========================================================
@@ -313,7 +296,7 @@
         }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // LOGIC NHẬP KHO (IN)
+        // LOGIC NHẬP KHO (IN) - Chỉ cần Tag & Bin
         document.getElementById('inbound-bin').addEventListener('keydown', function(e) {
             if(e.key === 'Enter') document.getElementById('inbound-tag').focus();
         });
@@ -322,19 +305,20 @@
             if(e.key === 'Enter') {
                 const bin = document.getElementById('inbound-bin').value;
                 const tag = this.value;
-                const wh = document.getElementById('inbound-wh').value;
                 const msg = document.getElementById('inbound-msg');
                 
                 if(!bin || !tag) return;
                 
                 msg.innerHTML = '<span class="text-blue-500">Đang lưu...</span>';
-                const { error } = await supabase.from('inventory').insert([{ tag_id: tag, bin: bin, wh_location: wh }]);
+                
+                // Mọi thứ khác như thời gian, lookup kho SQL sẽ tự làm
+                const { error } = await supabase.from('inventory').insert([{ tag_id: tag, bin: bin }]);
                 
                 if (error) {
                     msg.innerHTML = `<span class="text-red-500">Lỗi: ${error.message}</span>`;
                 } else {
-                    msg.innerHTML = `<span class="text-emerald-500">Đã nhập Tag: ${tag} vào ${bin}</span>`;
-                    this.value = ''; // Xoá ô Tag để quét tiếp
+                    msg.innerHTML = `<span class="text-emerald-500">Thành công! Đã nhập: ${tag}</span>`;
+                    this.value = ''; 
                     if(!document.getElementById('lock-bin').checked) {
                         document.getElementById('inbound-bin').value = '';
                         document.getElementById('inbound-bin').focus();
@@ -345,7 +329,7 @@
             }
         });
 
-        // LOGIC XUẤT KHO (OUT)
+        // LOGIC XUẤT KHO (OUT) - Chỉ xóa khỏi bảng inventory
         document.getElementById('outbound-tag').addEventListener('keydown', async function(e) {
             if(e.key === 'Enter') {
                 const tag = this.value;
@@ -353,14 +337,12 @@
                 if(!tag) return;
 
                 msg.innerHTML = '<span class="text-blue-500">Đang xuất...</span>';
-                // Xoá khỏi kho và đưa vào lịch sử
                 const { error } = await supabase.from('inventory').delete().eq('tag_id', tag);
-                await supabase.from('inventory_out').insert([{ tag_id: tag }]); // Ghi log
 
                 if (error) {
                     msg.innerHTML = `<span class="text-red-500">Lỗi: ${error.message}</span>`;
                 } else {
-                    msg.innerHTML = `<span class="text-rose-500">Đã xuất Tag: ${tag}</span>`;
+                    msg.innerHTML = `<span class="text-rose-500">Thành công! Đã xuất: ${tag}</span>`;
                     this.value = '';
                     this.focus();
                 }
@@ -368,7 +350,7 @@
         });
 
         // ========================================================
-        // 5. LOGIC UPLOAD DỮ LIỆU NGUỒN CSV
+        // 5. UPLOAD DỮ LIỆU NGUỒN (Master Data & iScala)
         // ========================================================
         async function uploadData() {
             const fMaster = document.getElementById('file-master').files[0];
@@ -376,8 +358,7 @@
             
             if(fMaster) {
                 Papa.parse(fMaster, {
-                    header: true,
-                    skipEmptyLines: true,
+                    header: true, skipEmptyLines: true,
                     complete: async function(results) {
                         await supabase.from('master_data').upsert(results.data);
                         alert('Up Master Data thành công!');
@@ -386,8 +367,7 @@
             }
             if(fIscala) {
                 Papa.parse(fIscala, {
-                    header: true,
-                    skipEmptyLines: true,
+                    header: true, skipEmptyLines: true,
                     complete: async function(results) {
                         await supabase.from('iscala_data').upsert(results.data);
                         alert('Up iScala thành công!');
@@ -397,11 +377,11 @@
         }
 
         // ========================================================
-        // 6. GIỮ NGUYÊN 100% CÁC THUẬT TOÁN PHÂN TÍCH CỦA ANH
+        // 6. CÁC THUẬT TOÁN UI & RENDER (GIỮ NGUYÊN HOÀN TOÀN TỪ BẢN CŨ)
         // ========================================================
         function updateKPIs(summary) {
             let totalActual = 0, totalIscala = 0;
-            summary.forEach(row => { totalActual += row.actual; totalIscala += row.iscala; });
+            summary.forEach(row => { totalActual += Number(row.actual); totalIscala += Number(row.iscala); });
             document.getElementById('kpi-total-actual').innerText = totalActual.toLocaleString();
             let diff = totalActual - totalIscala;
             let diffPercent = totalIscala !== 0 ? ((diff / totalIscala) * 100).toFixed(1) : (totalActual > 0 ? 100 : 0);
@@ -444,7 +424,6 @@
                 let act = Number(row.colC) || 0;
                 let isc = row.colD === "No data" ? 0 : Number(row.colD) || 0;
                 groups[row.colB].sumActual += act;
-                // Chỉ gán iscala 1 lần cho Group vì view trả nhiều dòng
                 groups[row.colB].sumIscala = isc; 
                 if (act > groups[row.colB].maxActual) groups[row.colB].maxActual = act;
             });
@@ -453,12 +432,9 @@
 
         function renderAnalysisPanel(data) {
             const grouped = groupDataByColB(data);
-            
-            // Phân tích No Data
             const noDataTags = data.filter(r => String(r.colE).toLowerCase().includes("no data") || String(r.colB).toLowerCase().includes("no data")).map(r => r.colH);
             document.getElementById('analysis-no-data').innerHTML = noDataTags.length > 0 ? noDataTags.map(t => `<div class="badge-warning inline-flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-rose-600 dot-pulse-red"></span><span class="text-[11px] font-black text-rose-700">${t}</span></div>`).join('') : '<span class="text-xs text-slate-400 italic">An toàn</span>';
             
-            // Phân tích kiện < 2
             const lowStock = Object.keys(grouped).map(key => {
                 const g = grouped[key];
                 const kien = g.maxActual > 0 ? Math.ceil((g.sumActual / 2) / g.maxActual) : 0;
@@ -466,12 +442,10 @@
             }).filter(item => item.kien > 0 && item.kien < 2 && item.key !== 'No data');
             document.getElementById('analysis-low-stock').innerHTML = lowStock.length > 0 ? lowStock.map(item => `<div class="badge-warning inline-flex items-center gap-2 px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-rose-600 dot-pulse-red"></span><span class="text-[11px] font-black text-rose-800">${item.key}: <span class="text-rose-600">${item.kien} Kiện</span></span></div>`).join('') : '<span class="text-xs text-slate-400 italic">Đã đủ số lượng</span>';
 
-            // Phân tích trùng Tag ID
             let tagFreq = {}; data.forEach(r => { if(r.colH) tagFreq[r.colH] = (tagFreq[r.colH] || 0) + 1; });
             const dups = Object.keys(tagFreq).filter(t => tagFreq[t] > 1);
             document.getElementById('analysis-duplicates').innerHTML = dups.length > 0 ? dups.map(t => `<div class="badge-warning inline-flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg"><span class="w-2 h-2 rounded-full bg-amber-500 dot-pulse-amber"></span><span class="text-[11px] font-black text-amber-800">${t} (x${tagFreq[t]})</span></div>`).join('') : '<span class="text-xs text-slate-400 italic">Không có mã trùng</span>';
 
-            // Phân tích kiện 3-5
             const midStock = Object.keys(grouped).map(key => {
                 const g = grouped[key];
                 const kien = g.maxActual > 0 ? Math.ceil((g.sumActual / 2) / g.maxActual) : 0;
