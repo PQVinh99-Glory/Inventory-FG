@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WHS FG | By Vinh</title>
+    <title>WHS FG PRO | By Vinh</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -15,13 +14,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --primary-glow: rgba(79, 70, 229, 0.6);
-            --accent-glow: rgba(6, 182, 212, 0.6);
+            --primary-glow: rgba(99, 102, 241, 0.6);
+            --accent-glow: rgba(16, 185, 129, 0.6);
+            --danger-glow: rgba(244, 63, 94, 0.6);
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            /* ĐÃ CẬP NHẬT: Sử dụng file wallpaper4k.png trong cùng thư mục */
-            background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
+            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), 
                               url('wallpaper4k.png'); 
             background-size: cover;
             background-position: center;
@@ -31,110 +30,99 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        /* Glassmorphism 2.0 - Hiệu ứng kính mờ cao cấp */
+        /* Glassmorphism 3.0 - Siêu mờ và tinh tế */
         .glass-card { 
-            background: rgba(255, 255, 255, 0.07); 
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(25px) saturate(160%);
+            -webkit-backdrop-filter: blur(25px) saturate(160%);
             border-radius: 28px; 
-            border: 1px solid rgba(255, 255, 255, 0.125); 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         .glass-card:hover { 
-            transform: translateY(-8px) scale(1.01); 
-            background: rgba(255, 255, 255, 0.12);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 30px rgba(99, 102, 238, 0.3);
+            transform: translateY(-5px); 
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
         }
         
         .group-header { 
-            background: rgba(255, 255, 255, 0.05) !important; 
+            background: rgba(255, 255, 255, 0.03) !important; 
             border-left: 6px solid #6366f1; 
             color: #e0e7ff !important;
             font-weight: 800; 
         }
 
-        /* Sticky Header với hiệu ứng lơ lửng */
         .sticky-header {
             position: sticky; top: 20px; z-index: 50;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(25px);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
-            transition: all 0.3s ease;
         }
 
-        /* Loading Screen AI */
+        /* Neon Effects */
+        .btn-premium {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-premium:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: scale(1.02);
+        }
+        .neon-text-indigo { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
+        .neon-text-rose { text-shadow: 0 0 10px rgba(244, 63, 94, 0.8); }
+        .neon-text-emerald { text-shadow: 0 0 10px rgba(16, 185, 129, 0.8); }
+
+        /* Tùy chỉnh Toolbar ApexCharts sang Glassmorphism */
+        .apexcharts-toolbar {
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            padding: 4px !important;
+            top: 10px !important;
+            right: 10px !important;
+        }
+        .apexcharts-toolbar svg {
+            fill: #94a3b8 !important;
+        }
+
         #loading { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: #0f172a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; 
         }
         .spinner { 
             width: 60px; height: 60px; border: 4px solid rgba(99, 102, 238, 0.1); border-top: 4px solid #6366f1; 
-            border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin-bottom: 20px; 
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; 
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 10000; justify-content: center; align-items: center; }
-        .modal.active { display: flex; animation: modalZoom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        @keyframes modalZoom { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .modal.active { display: flex; animation: modalZoom 0.3s ease-out; }
+        @keyframes modalZoom { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-        /* Premium Buttons */
-        .btn-premium {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .btn-premium:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px rgba(99, 102, 238, 0.5);
-            filter: brightness(1.2);
-        }
-        .btn-premium::after {
-            content: '';
-            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-            transform: scale(0); transition: transform 0.5s ease;
-        }
-        .btn-premium:hover::after { transform: scale(1); }
-
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-            opacity: 0;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
-        ::-webkit-scrollbar-thumb { background: rgba(99, 102, 238, 0.5); border-radius: 10px; }
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="p-4 md:p-6 pb-20 max-w-[1600px] mx-auto">
 
     <div id="loading">
         <div class="spinner"></div>
-        <p class="font-black text-indigo-400 animate-pulse uppercase tracking-[0.3em] text-sm">Loading...</p>
+        <p class="font-black text-indigo-400 animate-pulse uppercase tracking-[0.3em] text-sm">System Syncing...</p>
     </div>
 
-    <!-- STICKY HEADER -->
     <header class="sticky-header p-4 md:p-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-center shadow-2xl">
         <div class="mb-4 md:mb-0">
             <div class="flex items-center gap-2 mb-1">
                 <span class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span>
-                <p class="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Iventory Analytics v5.0</p>
+                <p class="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Enterprise Analytics v5.0</p>
             </div>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">WHS <span class="text-indigo-500">FG Pro</span></h1>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">WHS <span class="text-indigo-500 neon-text-indigo">FG Pro</span></h1>
         </div>
         <div class="w-full md:w-auto">
             <div class="grid grid-cols-2 sm:flex gap-3 justify-end items-center">
@@ -152,18 +140,18 @@
                 </button>
                 <button onclick="fetchData()" class="btn-premium bg-slate-800/80 text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg border border-slate-700">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                    LÀM MỚI (REFRESH)
+                    REFRESH
                 </button>
             </div>
             <p class="text-right text-[10px] font-medium text-slate-400 mt-2">Syncing with Cloud... <span id="last-update" class="text-indigo-400 font-bold">--:--</span></p>
         </div>
     </header>
 
-    <!-- KPI CARDS (HYPER-GLOW) -->
+    <!-- KPI CARDS -->
     <section class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-10">
         <div class="glass-card p-6 border-b-4 border-indigo-500 animate-fade-in" style="animation-delay: 0.1s">
             <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2 tracking-wider">Tổng Tồn Thực Tế</p>
-            <h3 class="text-3xl font-black text-white" id="kpi-total-actual">0</h3>
+            <h3 class="text-3xl font-black text-white neon-text-indigo" id="kpi-total-actual">0</h3>
             <p class="text-[9px] text-slate-500 mt-2 uppercase font-bold">PCS (Actual)</p>
         </div>
         <div class="glass-card p-6 border-b-4 border-blue-500 animate-fade-in" style="animation-delay: 0.2s">
@@ -176,7 +164,7 @@
         </div>
         <div class="glass-card p-6 border-b-4 border-rose-500 animate-fade-in" style="animation-delay: 0.3s">
             <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">TagID Không khớp</p>
-            <h3 class="text-3xl font-black text-rose-500" id="kpi-nodata">0</h3>
+            <h3 class="text-3xl font-black text-rose-500 neon-text-rose" id="kpi-nodata">0</h3>
             <p class="text-[9px] text-rose-400 mt-2 uppercase font-bold">No Data</p>
         </div>
         <div class="glass-card p-6 border-b-4 border-amber-500 animate-fade-in" style="animation-delay: 0.4s">
@@ -393,9 +381,7 @@
                 if (!groups[feat]) groups[feat] = { rows:[], sumActual: 0, sumIscala: 0, maxQty: 0 };
                 groups[feat].rows.push(row);
                 let act = Number(row.colC) || 0;
-                let isc = row.colD === 'No data' ? 0 : Number(row.colD) || 0;
                 groups[feat].sumActual += act;
-                groups[feat].sumIscala = isc; 
                 if (act > groups[feat].maxQty) groups[feat].maxQty = act;
             });
             return groups;
@@ -468,13 +454,13 @@
             percEl.innerText = `${diffPercent}%`;
 
             if (diff === 0) {
-                diffEl.className = "text-2xl md:text-3xl font-black text-emerald-400";
+                diffEl.className = "text-3xl font-black text-emerald-400";
                 percEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-900/30 text-emerald-400";
             } else if (Math.abs(diffPercent) < 5) {
-                diffEl.className = "text-2xl md:text-3xl font-black text-amber-400";
+                diffEl.className = "text-3xl font-black text-amber-400";
                 percEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400";
             } else {
-                diffEl.className = "text-2xl md:text-3xl font-black text-rose-500";
+                diffEl.className = "text-3xl font-black text-rose-500";
                 percEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-900/30 text-rose-500";
             }
 
@@ -518,8 +504,7 @@
                 labels.push(row.feature);
                 actData.push(Number(row.actual) || 0);
                 iscData.push(Number(row.iscala) || 0);
-                let diff = row.iscala !== 0 ? ((row.actual - row.iscala) / row.iscala * 100).toFixed(1) : 0;
-                diffData.push(parseFloat(diff));
+                diffData.push(Number(row.diff_percent) || 0);
                 if (row.actual !== row.iscala) {
                     pieLabels.push(row.feature);
                     pieData.push(Math.abs(row.actual - row.iscala));
@@ -541,13 +526,13 @@
                     animations: { enabled: true, easing: 'easeinout', speed: 800 },
                     foreColor: '#94a3b8'
                 },
-                stroke: { width: [0, 0, 3], curve: 'smooth' },
+                stroke: { width: [0, 0, 4], curve: 'smooth' },
                 plotOptions: { bar: { columnWidth: '60%', borderRadius: 4 } },
-                colors: ['#6366f1', '#334155', '#ff003c'],
+                colors: ['#6366f1', '#f8fafc', '#ff003c'],
                 xaxis: { categories: labels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
                 yaxis: [
                     { title: { text: 'Số lượng PCS' }, labels: { formatter: (val) => val.toFixed(0) } },
-                    { opposite: true, title: { text: 'Tỉ lệ lệch %' }, labels: { formatter: (val) => val + '%' } }
+                    { opposite: true, title: { text: 'Tỉ lệ lệch %' }, labels: { formatter: (val) => val + '%' }, min: -100, max: 100 }
                 ],
                 legend: { position: 'top', horizontalAlign: 'right' },
                 tooltip: { theme: 'dark', shared: true, intersect: false }
@@ -684,13 +669,43 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
+        // NÂNG CẤP LOGIC NHẬP KHO: Kiểm tra trùng Tag ID
         document.getElementById('inbound-tag').addEventListener('keydown', async function(e) {
             if(e.key === 'Enter') {
                 const bin = document.getElementById('inbound-bin').value;
                 const tag = this.value;
                 if(!bin || !tag) return;
-                const { error } = await supabaseClient.from('inventory').upsert([{ tag_id: tag, bin: bin }]);
-                if (error) alert(error.message); else { this.value = ''; fetchData(); }
+
+                // 1. Kiểm tra xem Tag ID đã tồn tại chưa
+                const { data: existingData, error: searchError } = await supabaseClient
+                    .from('inventory')
+                    .select('tag_id, bin')
+                    .eq('tag_id', tag)
+                    .maybeSingle();
+
+                if (searchError) {
+                    alert("Lỗi hệ thống khi kiểm tra Tag ID!");
+                    return;
+                }
+
+                if (existingData) {
+                    // 2. Nếu tồn tại, hiển thị cảnh báo
+                    const confirmUpdate = confirm(`CẢNH BÁO: Tag ID ${tag} đã tồn tại tại vị trí ${existingData.bin}.\n\nBạn có muốn THAY ĐỔI vị trí sang ${bin} không?\n- Chọn "Có": Cập nhật vị trí mới.\n- Chọn "Không": Ghi thêm mới (Sẽ báo trùng trên Dashboard).`);
+                    
+                    if (confirmUpdate) {
+                        // Logic ban đầu: Cập nhật (Upsert)
+                        const { error } = await supabaseClient.from('inventory').update({ bin: bin }).eq('tag_id', tag);
+                        if (error) alert(error.message); else { this.value = ''; fetchData(); }
+                    } else {
+                        // Logic mới: Ghi thêm bản ghi trùng (Insert)
+                        const { error } = await supabaseClient.from('inventory').insert([{ tag_id: tag, bin: bin }]);
+                        if (error) alert(error.message); else { this.value = ''; fetchData(); }
+                    }
+                } else {
+                    // 3. Nếu chưa tồn tại -> Ghi mới bình thường
+                    const { error } = await supabaseClient.from('inventory').insert([{ tag_id: tag, bin: bin }]);
+                    if (error) alert(error.message); else { this.value = ''; fetchData(); }
+                }
             }
         });
 
@@ -727,7 +742,7 @@
 </body>
     <footer class="fixed bottom-4 left-0 w-full text-center pointer-events-none">
     <p class="text-[10px] font-futuristic text-slate-500 uppercase tracking-[0.2em] opacity-50 hover:opacity-100 transition-opacity duration-500">
-        Engineered by Vinh © 2026 | Inventory Core v5.0
+        Engineered by Vinh © 2026 | Ultra-Premium Inventory Core v5.0
     </p>
 </footer>
 </html>
