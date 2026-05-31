@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WHS FG PRO | By Vinh</title>
+    <title>WHS FG PRO | By Vinh V6</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -20,7 +20,7 @@
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), 
+            background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
                               url('wallpaper4k.png'); 
             background-size: cover;
             background-position: center;
@@ -30,25 +30,24 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        /* Glassmorphism 3.0 - Siêu mờ và tinh tế */
+        /* Glassmorphism 4.0 - Siêu mờ, khoe nền 4K */
         .glass-card { 
-            background: rgba(255, 255, 255, 0.05); 
-            backdrop-filter: blur(25px) saturate(160%);
-            -webkit-backdrop-filter: blur(25px) saturate(160%);
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(30px) saturate(160%);
+            -webkit-backdrop-filter: blur(30px) saturate(160%);
             border-radius: 28px; 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
         }
         .glass-card:hover { 
             transform: translateY(-5px); 
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(99, 102, 241, 0.4);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(99, 102, 241, 0.3);
         }
         
         .group-header { 
-            background: rgba(255, 255, 255, 0.03) !important; 
+            background: rgba(255, 255, 255, 0.02) !important; 
             border-left: 6px solid #6366f1; 
             color: #e0e7ff !important;
             font-weight: 800; 
@@ -56,7 +55,7 @@
 
         .sticky-header {
             position: sticky; top: 20px; z-index: 50;
-            background: rgba(15, 23, 42, 0.7);
+            background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
@@ -70,26 +69,31 @@
         }
         .btn-premium:hover {
             filter: brightness(1.2);
-            box-shadow: 0 0 15px var(--primary-glow);
+            box-shadow: 0 0 20px var(--primary-glow);
             transform: scale(1.02);
         }
-        .neon-text-indigo { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8); }
-        .neon-text-rose { text-shadow: 0 0 10px rgba(244, 63, 94, 0.8); }
-        .neon-text-emerald { text-shadow: 0 0 10px rgba(16, 185, 129, 0.8); }
+        .neon-text-indigo { text-shadow: 0 0 12px rgba(99, 102, 241, 0.8); }
+        .neon-text-rose { text-shadow: 0 0 12px rgba(244, 63, 94, 0.8); }
 
-        /* Tùy chỉnh Toolbar ApexCharts sang Glassmorphism */
+        /* Custom Scrollbar - Siêu mỏng, không gây nhiễu */
+        .table-container::-webkit-scrollbar { width: 4px; height: 4px; }
+        .table-container::-webkit-scrollbar-track { background: transparent; }
+        .table-container::-webkit-scrollbar-thumb { 
+            background: rgba(99, 102, 241, 0.3); 
+            border-radius: 10px; 
+        }
+
+        /* Tùy chỉnh Toolbar ApexCharts - Đặt gọn góc, mờ nền */
         .apexcharts-toolbar {
-            background: rgba(255, 255, 255, 0.05) !important;
+            background: rgba(15, 23, 42, 0.5) !important;
             backdrop-filter: blur(10px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 12px !important;
-            padding: 4px !important;
             top: 10px !important;
             right: 10px !important;
+            padding: 4px !important;
         }
-        .apexcharts-toolbar svg {
-            fill: #94a3b8 !important;
-        }
+        .apexcharts-toolbar svg { fill: #94a3b8 !important; }
 
         #loading { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -101,7 +105,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 10000; justify-content: center; align-items: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); z-index: 10000; justify-content: center; align-items: center; }
         .modal.active { display: flex; animation: modalZoom 0.3s ease-out; }
         @keyframes modalZoom { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
@@ -345,6 +349,21 @@
         </div>
     </div>
 
+    <!-- NEW CUSTOM CONFIRM MODAL -->
+    <div id="modal-confirm" class="modal">
+        <div class="bg-slate-900 p-8 rounded-3xl w-full max-w-[400px] shadow-2xl border border-indigo-500/30 mx-4 text-center">
+            <div class="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+            <h3 class="text-xl font-black text-white mb-2">CẢNH BÁO TRÙNG TAG</h3>
+            <p id="confirm-msg" class="text-slate-400 text-sm mb-8 leading-relaxed">Tag ID này đã tồn tại trong hệ thống. Bạn muốn thực hiện thao tác nào?</p>
+            <div class="flex gap-3">
+                <button id="btn-confirm-no" class="flex-1 bg-slate-800 text-slate-300 py-3 rounded-2xl text-xs font-bold hover:bg-slate-700 transition-all border border-slate-700">KHÔNG (Ghi Thêm)</button>
+                <button id="btn-confirm-yes" class="flex-1 bg-indigo-600 text-white py-3 rounded-2xl text-xs font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/30">CÓ (Đổi Vị Trí)</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SUPABASE_URL = 'https://dhlpkycpkndfdgnbdcwn.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRobHBreWNwa25kZmRnbmJkY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwODM2NDgsImV4cCI6MjA5NTY1OTY0OH0.aVbFpwZj6_zYlTqHYds27f9Q7brZn8Ti-0VUOFRuslE'; 
@@ -527,12 +546,26 @@
                     foreColor: '#94a3b8'
                 },
                 stroke: { width: [0, 0, 4], curve: 'smooth' },
-                plotOptions: { bar: { columnWidth: '60%', borderRadius: 4 } },
+                plotOptions: { 
+                    bar: { 
+                        columnWidth: '70%', 
+                        borderRadius: 4,
+                        // Đảm bảo 2 cột nằm cạnh nhau
+                        dataLabels: { position: 'top' }
+                    } 
+                },
                 colors: ['#6366f1', '#f8fafc', '#ff003c'],
                 xaxis: { categories: labels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
                 yaxis: [
                     { title: { text: 'Số lượng PCS' }, labels: { formatter: (val) => val.toFixed(0) } },
-                    { opposite: true, title: { text: 'Tỉ lệ lệch %' }, labels: { formatter: (val) => val + '%' }, min: -100, max: 100 }
+                    { 
+                        opposite: true, 
+                        title: { text: 'Tỉ lệ lệch %' }, 
+                        labels: { formatter: (val) => val + '%' }, 
+                        // ĐIỂM MẤT CHỐT: Đảo ngược trục Y để Line nằm sát mép trên và đổ xuống khi lệch
+                        min: 100,
+                        max: -100,
+                    }
                 ],
                 legend: { position: 'top', horizontalAlign: 'right' },
                 tooltip: { theme: 'dark', shared: true, intersect: false }
@@ -669,14 +702,30 @@
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        // NÂNG CẤP LOGIC NHẬP KHO: Kiểm tra trùng Tag ID
+        // --- NÂNG CẤP: CUSTOM CONFIRM MODAL ---
+        function showCustomConfirm(message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('modal-confirm');
+                document.getElementById('confirm-msg').innerText = message;
+                modal.classList.add('active');
+
+                document.getElementById('btn-confirm-yes').onclick = () => {
+                    modal.classList.remove('active');
+                    resolve(true);
+                };
+                document.getElementById('btn-confirm-no').onclick = () => {
+                    modal.classList.remove('active');
+                    resolve(false);
+                };
+            });
+        }
+
         document.getElementById('inbound-tag').addEventListener('keydown', async function(e) {
             if(e.key === 'Enter') {
                 const bin = document.getElementById('inbound-bin').value;
                 const tag = this.value;
                 if(!bin || !tag) return;
 
-                // 1. Kiểm tra xem Tag ID đã tồn tại chưa
                 const { data: existingData, error: searchError } = await supabaseClient
                     .from('inventory')
                     .select('tag_id, bin')
@@ -689,20 +738,17 @@
                 }
 
                 if (existingData) {
-                    // 2. Nếu tồn tại, hiển thị cảnh báo
-                    const confirmUpdate = confirm(`CẢNH BÁO: Tag ID ${tag} đã tồn tại tại vị trí ${existingData.bin}.\n\nBạn có muốn THAY ĐỔI vị trí sang ${bin} không?\n- Chọn "Có": Cập nhật vị trí mới.\n- Chọn "Không": Ghi thêm mới (Sẽ báo trùng trên Dashboard).`);
+                    // SỬ DỤNG MODAL TÙY CHỈNH THAY CHO CONFIRM()
+                    const confirmUpdate = await showCustomConfirm(`Tag ID ${tag} đã tồn tại tại vị trí ${existingData.bin}.\n\nBạn có muốn THAY ĐỔI vị trí sang ${bin} không?`);
                     
                     if (confirmUpdate) {
-                        // Logic ban đầu: Cập nhật (Upsert)
                         const { error } = await supabaseClient.from('inventory').update({ bin: bin }).eq('tag_id', tag);
                         if (error) alert(error.message); else { this.value = ''; fetchData(); }
                     } else {
-                        // Logic mới: Ghi thêm bản ghi trùng (Insert)
                         const { error } = await supabaseClient.from('inventory').insert([{ tag_id: tag, bin: bin }]);
                         if (error) alert(error.message); else { this.value = ''; fetchData(); }
                     }
                 } else {
-                    // 3. Nếu chưa tồn tại -> Ghi mới bình thường
                     const { error } = await supabaseClient.from('inventory').insert([{ tag_id: tag, bin: bin }]);
                     if (error) alert(error.message); else { this.value = ''; fetchData(); }
                 }
