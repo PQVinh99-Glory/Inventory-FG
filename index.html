@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <meta charset="UTF-es-vn">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WMS FG PRO | By Vinh Ver1.1</title>
+    <title>WMS FG PRO | By Vinh Ver1.2</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
@@ -80,20 +81,18 @@
             border-radius: 10px; 
         }
 
-        /* FIX TOOLBAR POSITION */
         .apexcharts-toolbar {
             background: rgba(15, 23, 42, 0.6) !important;
             backdrop-filter: blur(10px) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             border-radius: 12px !important;
             top: 15px !important;
-            left: 15px !important; /* Đưa sang trái */
+            left: 15px !important;
             right: auto !important;
             padding: 4px !important;
         }
         .apexcharts-toolbar svg { fill: #94a3b8 !important; }
 
-        /* ANIMATION FOR PALLET ICON */
         @keyframes sway {
             0%, 100% { transform: rotate(-8deg); }
             50% { transform: rotate(8deg); }
@@ -120,10 +119,18 @@
 
         .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Toast Notification */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 1rem 1.5rem; border-radius: 1rem; color: white; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; min-width: 300px; animation: toastIn 0.4s ease-out forwards; }
+        .toast-success { background: linear-gradient(to right, #10b981, #059669); }
+        .toast-error { background: linear-gradient(to right, #ef4444, #b91c1c); }
+        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body class="p-4 md:p-6 pb-20 max-w-[1600px] mx-auto">
 
+    <div id="toast-container"></div>
     <div id="loading">
         <div class="spinner"></div>
         <p class="font-black text-indigo-400 animate-pulse uppercase tracking-[0.3em] text-sm">System Syncing...</p>
@@ -131,18 +138,14 @@
 
     <header class="sticky-header p-4 md:p-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-center shadow-2xl">
         <div class="flex items-center gap-4 mb-4 md:mb-0">
-            <!-- Pallet Icon with Sway Animation -->
             <div class="animate-sway w-12 h-12">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-lg">
-                    <!-- Pallet base -->
                     <path d="M3 17H21V19H3V17Z" fill="#4B5563"/>
                     <path d="M5 19H7V21H5V19Z" fill="#374151"/>
                     <path d="M10 19H12V21H10V19Z" fill="#374151"/>
                     <path d="M15 19H17V21H15V19Z" fill="#374151"/>
                     <path d="M19 19H21V21H19V19Z" fill="#374151"/>
-                    <!-- Box -->
                     <rect x="4" y="7" width="16" height="10" rx="2" fill="#6366f1" stroke="#4338CA" stroke-width="1"/>
-                    <!-- Straps (Dây đai) -->
                     <path d="M8 7V17" stroke="#E2E8F0" stroke-width="1.5" stroke-opacity="0.6"/>
                     <path d="M16 7V17" stroke="#E2E8F0" stroke-width="1.5" stroke-opacity="0.6"/>
                     <path d="M4 12H20" stroke="#E2E8F0" stroke-width="1.5" stroke-opacity="0.6"/>
@@ -299,7 +302,7 @@
         </div>
     </div>
 
-    <!-- MODALS (Giữ nguyên logic cũ) -->
+    <!-- MODALS (Logic giữ nguyên) -->
     <div id="modal-inbound" class="modal">
         <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[450px] shadow-2xl border border-slate-700 mx-4">
             <div class="flex justify-between items-center mb-6">
@@ -414,19 +417,56 @@
 
         window.onload = fetchData;
 
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'success' ? 'toast-success' : 'toast-error'} animate__animated animate__fadeInRight`;
+            toast.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => {
+                toast.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // HÀM FETCH DỮ LIỆU SIÊU BỀN (Xử lý phân trang > 1000 dòng)
+        async function fetchAllFromSupabase(tableName) {
+            let allData = [];
+            let from = 0;
+            const step = 1000;
+            let hasMore = true;
+
+            while (hasMore) {
+                const { data, error } = await supabaseClient.from(tableName).select('*').range(from, from + step - 1);
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    allData.push(...data);
+                    from += step;
+                }
+                if (!data || data.length < step) hasMore = false;
+            }
+            return allData;
+        }
+
         async function fetchData() {
             document.getElementById('loading').style.display = 'flex';
             try {
-                const [detailRes, summaryRes] = await Promise.all([
-                    supabaseClient.from('vw_kho_thanh_pham').select('*'),
-                    supabaseClient.from('vw_summary_analysis').select('*')
-                ]);
-                rawData = detailRes.data;
+                // Load từng bảng một để tránh treo hệ thống
+                const detailData = await fetchAllFromSupabase('vw_kho_thanh_pham');
+                const summaryRes = await supabaseClient.from('vw_summary_analysis').select('*');
+                
+                if (summaryRes.error) throw summaryRes.error;
+
+                rawData = detailData;
                 summaryData = summaryRes.data;
+                
                 document.getElementById('last-update').innerText = new Date().toLocaleTimeString('vi-VN');
                 initDashboard();
+                showToast("Đồng bộ dữ liệu thành công!");
             } catch (error) {
-                console.error("Error:", error);
+                console.error("Critical Error:", error);
+                showToast(`Lỗi kết nối Supabase: ${error.message}`, "error");
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
@@ -585,11 +625,11 @@
                     animations: { enabled: true, easing: 'easeinout', speed: 800 },
                     foreColor: '#94a3b8'
                 },
-                stroke: { width: [0, 0, 4], curve: 'smooth' }, // Nét vẽ mềm mại hơn
+                stroke: { width: [0, 0, 4], curve: 'smooth' }, 
                 plotOptions: { 
                     bar: { 
                         columnWidth: '60%', 
-                        borderRadius: 6 // Bo góc cột cho mềm mại
+                        borderRadius: 6 
                     } 
                 },
                 colors: ['#6366f1', '#f8fafc', '#ff003c'],
@@ -608,7 +648,6 @@
                         max: 100,
                     }
                 ],
-                // THÊM ĐƯỜNG TREND LINE CỐ ĐỊNH Ở MỐC 8000
                 annotations: {
                     yaxis: [{
                         y: 8000,
@@ -628,7 +667,6 @@
             if (pieData.length > 0) {
                 document.getElementById('pie-empty-msg').classList.add('hidden');
                 if (chartPie) chartPie.destroy();
-                // SỬ DỤNG GAM MÀU MINT DỊU NHẸ
                 chartPie = new ApexCharts(document.querySelector("#chart-pie-risk"), {
                     series: pieData, labels: pieLabels, chart: { type: 'donut', height: 380, foreColor: '#94a3b8' },
                     colors: ['#a7f3d0', '#6ee7b7', '#10b981', '#34d399', '#d1fae5'], 
@@ -885,7 +923,7 @@
 </body>
     <footer class="fixed bottom-4 left-0 w-full text-center pointer-events-none">
     <p class="text-[10px] font-futuristic text-slate-500 uppercase tracking-[0.2em] opacity-50 hover:opacity-100 transition-opacity duration-500">
-        Engineered by Vinh © 2026 | Ultra-Premium Inventory Core 
+        Engineered by Vinh © 2026 | Ultra-Premium Inventory Core. 
     </p>
 </footer>
 </html>
