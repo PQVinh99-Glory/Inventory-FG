@@ -124,7 +124,7 @@
         .toast { padding: 1rem 1.5rem; border-radius: 1rem; color: white; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; min-width: 300px; animation: toastIn 0.4s ease-out forwards; }
         .toast-success { background: linear-gradient(to right, #10b981, #059669); }
         .toast-error { background: linear-gradient(to right, #ef4444, #b91c1c); }
-        @keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes toastIn { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body class="p-4 md:p-6 pb-20 max-w-[1600px] mx-auto">
@@ -872,35 +872,77 @@
             });
         }
 
-        function exportTableToExcel() {
-            const exportData = rawData.map(row => ({
-                "Stock Code": String(row.colA),
-                "Feature": String(row.colB),
-                "Actual Qty": Number(row.colC) || 0,
-                "Warehouse": String(row.colE),
-                "Stock Update": row.colF,
-                "Create Date": row.colG,
-                "Tag ID": String(row.colH),
-                "Bin": String(row.colI)
-            }));
-            const worksheet = XLSX.utils.json_to_sheet(exportData);
-            const range = XLSX.utils.decode_range(worksheet['!ref']);
-            for (let R = range.s.r + 1; R <= range.e.r; ++R) {
-                for (let C = range.s.c; C <= range.e.c; ++C) {
-                    const cell = worksheet[XLSX.utils.encode_cell({c:C, r:R})];
-                    if (!cell) continue;
-                    if (C === 2) cell.t = 'n';
-                    else if (C === 4 || C === 5) cell.t = 's';
-                    else {
-                        cell.t = 's';
-                        if (C === 6 || C === 7) cell.z = '@';
+        // NÂNG CẤP XUẤT EXCEL GỒM 2 SHEET (SHEET 1: TỒN KHO MASTER, SHEET 2: KHO PHỤ KIỆN)
+        async function exportTableToExcel() {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) loadingEl.style.display = 'flex';
+            
+            try {
+                // --- SHEET 1: TỒN KHO THÀNH PHẨM MASTER ---
+                const exportData1 = rawData.map(row => ({
+                    "Stock Code": String(row.colA),
+                    "Feature": String(row.colB),
+                    "Actual Qty": Number(row.colC) || 0,
+                    "Warehouse": String(row.colE),
+                    "Stock Update": row.colF,
+                    "Create Date": row.colG,
+                    "Tag ID": String(row.colH),
+                    "Bin": String(row.colI)
+                }));
+                const worksheet1 = XLSX.utils.json_to_sheet(exportData1);
+                const range1 = XLSX.utils.decode_range(worksheet1['!ref']);
+                for (let R = range1.s.r + 1; R <= range1.e.r; ++R) {
+                    for (let C = range1.s.c; C <= range1.e.c; ++C) {
+                        const cell = worksheet1[XLSX.utils.encode_cell({c:C, r:R})];
+                        if (!cell) continue;
+                        if (C === 2) cell.t = 'n';
+                        else if (C === 4 || C === 5) cell.t = 's';
+                        else {
+                            cell.t = 's';
+                            if (C === 6 || C === 7) cell.z = '@';
+                        }
                     }
                 }
+                worksheet1['!cols'] = [{wch:20},{wch:12},{wch:12},{wch:15},{wch:20},{wch:20},{wch:20},{wch:15}];
+
+                // --- SHEET 2: KHO PHỤ KIỆN (TRUY VẤN DỮ LIỆU GỐC) ---
+                const { data: pkData, error: pkError } = await supabaseClient.from('hang_phu_kien').select('*');
+                if (pkError) throw pkError;
+
+                const exportData2 = (pkData || []).map(row => ({
+                    "Mã Phụ Kiện (Code)": String(row.code || ''),
+                    "Số lượng (Qty)": Number(row.qty) || 0,
+                    "Vị trí (Bin)": String(row.bin || ''),
+                    "Ngày Tạo (Create Date)": row.created_at ? new Date(row.created_at).toLocaleString('vi-VN') : ''
+                }));
+                const worksheet2 = XLSX.utils.json_to_sheet(exportData2);
+                const range2 = XLSX.utils.decode_range(worksheet2['!ref']);
+                if (range2) {
+                    for (let R = range2.s.r + 1; R <= range2.e.r; ++R) {
+                        for (let C = range2.s.c; C <= range2.e.c; ++C) {
+                            const cell = worksheet2[XLSX.utils.encode_cell({c:C, r:R})];
+                            if (!cell) continue;
+                            if (C === 1) cell.t = 'n'; // Numeric Qty
+                            else cell.t = 's'; // Text strings
+                        }
+                    }
+                }
+                worksheet2['!cols'] = [{wch:25},{wch:15},{wch:15},{wch:25}];
+
+                // --- KHỞI TẠO WORKBOOK CHUNG ---
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, worksheet1, "Tồn Kho Thành Phẩm");
+                XLSX.utils.book_append_sheet(wb, worksheet2, "Kho Phụ Kiện");
+
+                const filename = `Inventory_Report_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                showToast("Xuất Excel hệ thống thành công (Workbook gồm 2 Sheet)!");
+            } catch (error) {
+                console.error("Lỗi xuất Excel:", error);
+                showToast(`Lỗi xuất Excel: ${error.message}`, "error");
+            } finally {
+                if (loadingEl) loadingEl.style.display = 'none';
             }
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, worksheet, "Tồn Kho");
-            worksheet['!cols'] = [{wch:20},{wch:12},{wch:12},{wch:15},{wch:20},{wch:20},{wch:20},{wch:15}];
-            XLSX.writeFile(wb, `Inventory_Report_${new Date().toLocaleDateString()}.xlsx`);
         }
 
         async function saveEdit() {
@@ -1343,7 +1385,7 @@
 </body>
 <footer class="fixed bottom-4 left-0 w-full text-center pointer-events-none">
     <p class="text-[10px] font-futuristic text-slate-500 uppercase tracking-[0.2em] opacity-50 hover:opacity-100 transition-opacity duration-500">
-        Engineered by Vinh © 2026 | Ultra-Premium Inventory Core 
+        Engineered by Vinh © 2026 | Data Analytics and Management System. 
     </p>
 </footer>
 </html>
