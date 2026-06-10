@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WMS FG PRO | By Vinh Ver1.3</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary-glow: rgba(99, 102, 241, 0.6);
+            --accent-glow: rgba(16, 185, 129, 0.6);
+            --danger-glow: rgba(244, 63, 94, 0.6);
+        }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)), 
+                              url('wallpaper4k.png'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #f8fafc; 
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(30px) saturate(160%);
+            -webkit-backdrop-filter: blur(30px) saturate(160%);
+            border-radius: 28px; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        .glass-card:hover { 
+            transform: translateY(-5px); 
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .group-header { 
+            background: rgba(255, 255, 255, 0.02) !important; 
+            border-left: 6px solid #6366f1; 
+            color: #e0e7ff !important;
+            font-weight: 800; 
+        }
+
+        .sticky-header {
+            position: sticky; top: 20px; z-index: 50;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+
+        .btn-premium {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-premium:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px var(--primary-glow);
+            transform: scale(1.02);
+        }
+        .neon-text-indigo { text-shadow: 0 0 12px rgba(99, 102, 241, 0.8); }
+        .neon-text-rose { text-shadow: 0 0 12px rgba(244, 63, 94, 0.8); }
+
+        .table-container::-webkit-scrollbar { width: 4px; height: 4px; }
+        .table-container::-webkit-scrollbar-track { background: transparent; }
+        .table-container::-webkit-scrollbar-thumb { 
+            background: rgba(99, 102, 241, 0.3); 
+            border-radius: 10px; 
+        }
+
+        .apexcharts-toolbar {
+            background: rgba(15, 23, 42, 0.6) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            top: 15px !important;
+            left: 15px !important;
+            right: auto !important;
+            padding: 4px !important;
+        }
+        .apexcharts-toolbar svg { fill: #94a3b8 !important; }
+
+        @keyframes sway {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+        .animate-sway {
+            animation: sway 3s ease-in-out infinite;
+            display: inline-block;
+            transform-origin: bottom center;
+        }
+
+        #loading { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #0f172a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; 
+        }
+        .spinner { 
+            width: 60px; height: 60px; border: 4px solid rgba(99, 102, 238, 0.1); border-top: 4px solid #6366f1; 
+            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); z-index: 10000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; animation: modalZoom 0.3s ease-out; }
+        @keyframes modalZoom { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10001; display: flex; flex-direction: column; gap: 10px; }
+        .toast { padding: 1rem 1.5rem; border-radius: 1rem; color: white; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; min-width: 300px; animation: toastIn 0.4s ease-out forwards; }
+        .toast-success { background: linear-gradient(to right, #10b981, #059669); }
+        .toast-error { background: linear-gradient(to right, #ef4444, #b91c1c); }
+        @keyframes toastIn { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body class="p-4 md:p-6 pb-20 max-w-[1600px] mx-auto">
+
+    <div id="toast-container"></div>
+    <div id="loading">
+        <div class="spinner"></div>
+        <p class="font-black text-indigo-400 animate-pulse uppercase tracking-[0.3em] text-sm">System Syncing...</p>
+    </div>
+
+    <header class="sticky-header p-4 md:p-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-center shadow-2xl">
+        <div class="flex items-center gap-4 mb-4 md:mb-0">
+            <div class="animate-sway w-12 h-12">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-lg">
+                    <path d="M3 17H21V19H3V17Z" fill="#4B5563"/>
+                    <path d="M5 19H7V21H5V19Z" fill="#374151"/>
+                    <path d="M10 19H12V21H10V19Z" fill="#374151"/>
+                    <path d="M15 19H17V21H15V19Z" fill="#374151"/>
+                    <path d="M19 19H21V21H19V19Z" fill="#374151"/>
+                    <rect x="4" y="7" width="16" height="10" rx="2" fill="#6366f1" stroke="#4338CA" stroke-width="1"/>
+                    <path d="M8 7V17" stroke="#E2E8F0" stroke-width="1.5" stroke-opacity="0.6"/>
+                    <path d="M16 7V17" stroke="#E2E8F0" stroke-width="1.5" stroke-opacity="0.6"/>
+                    <path d="M4 12H20" stroke="#E2E8F0" stroke-width="1.5" stroke-opacity="0.6"/>
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full animate-ping"></span>
+                    <p class="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Inventory Analysis</p>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">WMS <span class="text-indigo-500 neon-text-indigo">FG Pro</span></h1>
+            </div>
+        </div>
+        <div class="w-full md:w-auto">
+            <div class="grid grid-cols-2 sm:flex gap-3 justify-end items-center">
+                <button onclick="openModal('modal-upload')" class="btn-premium bg-indigo-600/80 text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    NGUỒN (SOURCE)
+                </button>
+                <button onclick="openModal('modal-inbound')" class="btn-premium bg-emerald-600/80 text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    NHẬP (IN)
+                </button>
+                <button onclick="openModal('modal-outbound')" class="btn-premium bg-rose-600/80 text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    XUẤT (OUT)
+                </button>
+                <button onclick="openPhuKienModal()" class="btn-premium bg-violet-600/80 text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg border border-violet-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    KHO PHỤ KIỆN
+                </button>
+                <button onclick="fetchData()" class="btn-premium bg-slate-800/80 text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg border border-slate-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    REFRESH
+                </button>
+            </div>
+            <p class="text-right text-[10px] font-medium text-slate-400 mt-2">Syncing with Cloud... <span id="last-update" class="text-indigo-400 font-bold">--:--</span></p>
+        </div>
+    </header>
+
+    <!-- KPI CARDS -->
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-10">
+        <div class="glass-card p-6 border-b-4 border-indigo-500 animate-fade-in" style="animation-delay: 0.1s">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2 tracking-wider">Tổng Tồn Thực Tế</p>
+            <h3 class="text-3xl font-black text-white neon-text-indigo" id="kpi-total-actual">0</h3>
+            <p class="text-[9px] text-slate-500 mt-2 uppercase font-bold">PCS (Actual)</p>
+        </div>
+        <div class="glass-card p-6 border-b-4 border-blue-500 animate-fade-in" style="animation-delay: 0.2s">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">Chênh Lệch Hệ Thống</p>
+            <div class="flex items-baseline gap-2">
+                <h3 class="text-3xl font-black" id="kpi-diff">0</h3>
+                <span id="kpi-diff-percent" class="text-xs font-bold px-2 py-0.5 rounded-full">0%</span>
+            </div>
+            <p class="text-[9px] text-slate-500 mt-2 uppercase font-bold">vs iScala</p>
+        </div>
+        <div class="glass-card p-6 border-b-4 border-rose-500/80 animate-fade-in" style="animation-delay: 0.3s">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">TagID Không khớp</p>
+            <h3 class="text-3xl font-black text-rose-500 neon-text-rose" id="kpi-nodata">0</h3>
+            <p class="text-[9px] text-rose-400 mt-2 uppercase font-bold">No Data</p>
+        </div>
+        <div class="glass-card p-6 border-b-4 border-amber-500 animate-fade-in" style="animation-delay: 0.4s">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">Cần Chuyển Kho</p>
+            <h3 class="text-3xl font-black text-amber-500" id="kpi-move">0</h3>
+            <p class="text-[9px] text-amber-400 mt-2 font-bold">(WH 50 & 62)</p>
+        </div>
+        <div class="glass-card p-6 border-b-4 border-red-600 animate-fade-in" style="animation-delay: 0.5s">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">Trùng TagID</p>
+            <h3 class="text-3xl font-black text-red-500" id="kpi-duplicates">0</h3>
+            <p class="text-[9px] text-red-400 mt-2 uppercase font-bold">Verify required</p>
+        </div>
+    </section>
+
+    <!-- ANALYSIS PANEL -->
+    <section class="glass-card p-6 mb-10 border-t-4 border-indigo-500 animate-fade-in" style="animation-delay: 0.6s">
+        <div class="flex items-center gap-2 mb-6">
+            <div class="w-2 h-6 bg-indigo-500 rounded-full shadow-[0_0_10px_#6366f1]"></div>
+            <h3 class="text-sm font-extrabold text-white uppercase tracking-widest">Trung Tâm Cảnh Báo Rủi Ro</h3>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-slate-900/40 rounded-2xl p-6 border border-rose-500/20 backdrop-blur-md">
+                <div class="flex items-center gap-2 mb-6 pb-3 border-b border-rose-500/20">
+                    <span class="flex h-3 w-3 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-rose-600 shadow-[0_0_8px_#ff003c]"></span></span>
+                    <h4 class="text-rose-400 font-black uppercase text-xs tracking-widest">Ưu Tiên Xử Lý (No Data & 1 Kiện)</h4>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-3">Tag ID Lỗi "No Data"</p>
+                        <div id="analysis-no-data" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-3">Feature Tồn Thấp (1 Kiện)</p>
+                        <div id="analysis-low-stock" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-900/40 rounded-2xl p-6 border border-amber-500/20 backdrop-blur-md">
+                <div class="flex items-center gap-2 mb-6 pb-3 border-b border-amber-500/20">
+                    <span class="w-3 h-3 bg-amber-500 rounded-full animate-pulse shadow-[0_0_8px_#f59e0b]"></span>
+                    <h4 class="text-amber-400 font-black uppercase text-xs tracking-widest">Theo Dõi Gần (3-5 Kiện & Trùng Tag)</h4>
+                </div>
+                <div class="space-y-6">
+                    <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-3">Tag ID Bị Trùng</p>
+                        <div id="analysis-duplicates" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-3">Feature Sắp Hết (3-5 Kiện)</p>
+                        <div id="analysis-mid-stock" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHARTS -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <div class="glass-card p-6 lg:col-span-2 animate-fade-in" style="animation-delay: 0.7s">
+            <h3 class="text-sm font-bold text-white uppercase mb-6 flex items-center gap-2"><span class="w-1 h-4 bg-indigo-500 rounded-full shadow-[0_0_8px_#6366f1]"></span>Actual vs iScala & % Chênh Lệch</h3>
+            <div id="chart-comparison" class="w-full h-96"></div>
+        </div>
+        <div class="glass-card p-6 animate-fade-in" style="animation-delay: 0.8s">
+            <h3 class="text-sm font-bold text-white uppercase mb-6 flex items-center gap-2"><span class="w-1 h-4 bg-rose-500 rounded-full shadow-[0_0_8px_#ff003c]"></span>Phân Tích Rủi Ro (Lệch)</h3>
+            <div id="chart-pie-risk" class="w-full h-96 flex flex-col justify-center items-center">
+                <p id="pie-empty-msg" class="text-slate-500 text-xs italic hidden text-center">Không có dữ liệu lệch.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TABLE -->
+    <div class="glass-card overflow-hidden animate-fade-in" style="animation-delay: 0.9s">
+        <div class="flex flex-col sm:flex-row p-4 justify-between bg-slate-900/60 border-b border-slate-800 items-center gap-4">
+            <h2 class="text-lg font-extrabold text-white tracking-tight uppercase">Bảng Chi Tiết Tồn Kho Thành Phẩm</h2>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="exportTableToExcel()" class="flex-1 sm:flex-none bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-700 shadow-lg transition-all btn-premium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    XUẤT EXCEL
+                </button>
+                <input type="text" id="filter-input" placeholder="Tìm nhanh Bin, Tag, Feature..." class="flex-1 sm:w-64 px-4 py-2 border border-slate-700 rounded-xl text-sm outline-none bg-slate-900/50 text-white placeholder-slate-500 focus:ring-2 ring-indigo-500 transition-all">
+            </div>
+        </div>
+        <div class="table-container overflow-x-auto max-h-[650px]">
+            <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+                <thead class="text-[10px] text-slate-400 uppercase bg-slate-900/80 sticky top-0 z-10 shadow-sm font-black">
+                    <tr>
+                        <th class="px-6 py-4">Stock Code</th>
+                        <th class="px-4 py-4">Feature</th>
+                        <th class="px-4 py-4 text-right">Actual</th>
+                        <th class="px-4 py-4 text-center">Warehouse</th>
+                        <th class="px-4 py-4">STOCK-Update</th>
+                        <th class="px-4 py-4">CreateDATE</th>
+                        <th class="px-4 py-4">Tag ID</th>
+                        <th class="px-4 py-4">Bin</th>
+                        <th class="px-4 py-4 text-center">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body" class="divide-y divide-slate-800 font-medium text-slate-300"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODALS (Giữ nguyên logic cũ) -->
+    <div id="modal-inbound" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[450px] shadow-2xl border border-slate-700 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-emerald-400 uppercase">Nhập Kho (IN)</h3>
+                <button onclick="closeModal('modal-inbound')" class="text-slate-500 hover:text-rose-500 font-bold">X</button>
+            </div>
+            <div class="space-y-6">
+                <div class="p-4 border border-emerald-900/50 rounded-2xl bg-emerald-900/20">
+                    <p class="text-[11px] font-bold text-emerald-400 mb-3 uppercase">Quét thủ công</p>
+                    <div class="space-y-3">
+                        <input type="text" id="inbound-bin" class="w-full p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm placeholder-slate-500" placeholder="Vị Trí (Bin)...">
+                        <input type="text" id="inbound-tag" class="w-full p-2 border border-emerald-500 rounded-xl bg-slate-800 text-emerald-400 outline-none font-bold text-sm placeholder-slate-500" placeholder="Tag ID (Enter)...">
+                    </div>
+                </div>
+                <div class="p-4 border border-blue-900/50 rounded-2xl bg-blue-900/20">
+                    <p class="text-[11px] font-bold text-blue-400 mb-3 uppercase">Nhập bằng CSV</p>
+                    <input type="file" id="file-inbound" accept=".csv" class="text-xs w-full mb-2 text-slate-400">
+                    <button onclick="uploadInboundCSV()" class="w-full bg-blue-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-blue-700 transition-all btn-premium">Tải Lên CSV</button>
+                </div>
+                <div id="inbound-msg" class="text-xs font-bold text-center h-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-outbound" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-700 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-rose-500 uppercase">Xuất Kho (OUT)</h3>
+                <button onclick="closeModal('modal-outbound')" class="text-slate-500 hover:text-rose-500 font-bold">X</button>
+            </div>
+            <div class="space-y-4">
+                <label class="text-xs font-bold text-slate-500">Mã Tag ID Cần Xuất</label>
+                <input type="text" id="outbound-tag" class="w-full p-2 border border-rose-500 rounded-xl bg-slate-800 text-rose-400 outline-none font-bold text-sm placeholder-slate-500" placeholder="Quét Tag ID (Enter)...">
+                <div id="outbound-msg" class="text-xs font-bold text-center h-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-upload" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-700 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-indigo-400 uppercase">Cập Nhật Nguồn</h3>
+                <button onclick="closeModal('modal-upload')" class="text-slate-500 hover:text-rose-500 font-bold">X</button>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 border-2 border-dashed border-indigo-900/50 rounded-2xl bg-indigo-900/20">
+                    <label class="block text-xs font-bold text-indigo-400 mb-2">File: Stock Balance With Batch.csv</label>
+                    <input type="file" id="file-master" accept=".csv" class="text-xs w-full text-slate-400">
+                    <p class="text-[10px] text-slate-500 mt-2">Xóa toàn bộ dữ liệu cũ & cập nhật mới.</p>
+                </div>
+                <div id="upload-status" class="text-xs font-bold text-center h-4 text-blue-400"></div>
+                <button onclick="uploadData()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 shadow-lg btn-premium">Tải Lên Hệ Thống</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-700 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-amber-500 uppercase">Sửa Nhanh</h3>
+                <button onclick="closeModal('modal-edit')" class="text-slate-500 hover:text-rose-500 font-bold">X</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Mã Tag ID</label>
+                    <input type="text" id="edit-tag" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-500">Vị trí (Bin)</label>
+                    <input type="text" id="edit-bin" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm">
+                </div>
+                <div id="edit-msg" class="text-xs font-bold text-center h-4"></div>
+                <button onclick="saveEdit()" class="w-full bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 shadow-lg btn-premium">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-select-bin" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[450px] shadow-2xl border border-rose-500/30 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-rose-400 uppercase">Lựa Chọn Vị Trí Xuất</h3>
+                <button onclick="closeModal('modal-select-bin')" class="text-slate-500 hover:text-rose-500 font-bold">X</button>
+            </div>
+            <p class="text-slate-400 text-xs mb-4">Tag ID này hiện có tại nhiều vị trí. Vui lòng chọn chính xác vị trí cần xuất:</p>
+            <div id="bin-selection-list" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div>
+            <div id="select-bin-msg" class="text-xs font-bold text-center mt-4 h-4"></div>
+        </div>
+    </div>
+
+    <div id="modal-confirm" class="modal">
+        <div class="bg-slate-900 p-8 rounded-3xl w-full max-w-[400px] shadow-2xl border border-indigo-500/30 mx-4 text-center">
+            <div class="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-500/50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            </div>
+            <h3 class="text-xl font-black text-white mb-2">CẢNH BÁO TRÙNG TAG</h3>
+            <p id="confirm-msg" class="text-slate-400 text-sm mb-8 leading-relaxed">Tag ID này đã tồn tại trong hệ thống. Bạn muốn thực hiện thao tác nào?</p>
+            <div class="flex gap-3">
+                <button id="btn-confirm-no" class="flex-1 bg-slate-800 text-slate-300 py-3 rounded-2xl text-xs font-bold hover:bg-slate-700 transition-all border border-slate-700">KHÔNG (Ghi Thêm)</button>
+                <button id="btn-confirm-yes" class="flex-1 bg-indigo-600 text-white py-3 rounded-2xl text-xs font-bold hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/30">CÓ (Đổi Vị Trí)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PHÂN HỆ NÂNG CẤP: HÀNG PHỤ KIỆN ==================== -->
+    
+    <!-- Modal chính hiển thị danh sách hàng phụ kiện -->
+    <div id="modal-phu-kien" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[1000px] h-[85vh] flex flex-col shadow-2xl border border-slate-700 mx-4 overflow-hidden relative" 
+             style="background-image: linear-gradient(rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url('wallpaper4k.png'); background-size: cover; background-position: center;">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-xl text-violet-400 uppercase tracking-wider flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    Quản Lý Hàng Phụ Kiện
+                </h3>
+                <button onclick="closeModal('modal-phu-kien')" class="text-slate-400 hover:text-rose-500 font-bold text-xl transition-all">✕</button>
+            </div>
+            
+            <!-- Thanh Công Cụ: Tìm Kiếm & Nhập Kho -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-6 justify-between items-center">
+                <input type="text" id="phu-kien-filter" placeholder="Tìm nhanh Code, Bin..." 
+                       class="w-full sm:w-80 px-4 py-2 border border-slate-700 rounded-xl text-sm outline-none bg-slate-900/80 text-white placeholder-slate-500 focus:ring-2 ring-violet-500 transition-all">
+                
+                <button onclick="openModal('modal-phu-kien-inbound')" class="w-full sm:w-auto btn-premium bg-violet-600/80 text-white px-5 py-2.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    NHẬP PHỤ KIỆN
+                </button>
+            </div>
+            
+            <!-- Khu vực bảng dữ liệu -->
+            <div class="table-container overflow-y-auto flex-1 max-h-[55vh] border border-slate-800 rounded-2xl bg-slate-900/40">
+                <table class="w-full text-left text-sm whitespace-nowrap border-collapse">
+                    <thead class="text-[10px] text-slate-400 uppercase bg-slate-950 sticky top-0 z-10 shadow-sm font-black">
+                        <tr>
+                            <th class="px-6 py-4">Mã Phụ Kiện (Code)</th>
+                            <th class="px-4 py-4 text-right">Số lượng (Qty)</th>
+                            <th class="px-4 py-4 text-center">Vị trí (Bin)</th>
+                            <th class="px-6 py-4 text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="phu-kien-table-body" class="divide-y divide-slate-800 font-medium text-slate-300">
+                        <!-- Nạp dữ liệu tự động bằng JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nhập Kho Phụ Kiện (Inbound) -->
+    <div id="modal-phu-kien-inbound" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-700 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-violet-400 uppercase">Nhập Kho Phụ Kiện</h3>
+                <button onclick="closeModal('modal-phu-kien-inbound')" class="text-slate-500 hover:text-rose-500 font-bold">✕</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-400">Mã Phụ Kiện (Code)</label>
+                    <input type="text" id="pk-in-code" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm" placeholder="Nhập mã phụ kiện...">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400">Số lượng (Qty)</label>
+                    <input type="number" id="pk-in-qty" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm" placeholder="Nhập số lượng..." min="1">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400">Vị trí (Bin)</label>
+                    <input type="text" id="pk-in-bin" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm" placeholder="Ví dụ: BIN-01...">
+                </div>
+                <div id="pk-in-msg" class="text-xs font-bold text-center h-4"></div>
+                <button onclick="savePhuKienInbound()" class="w-full bg-violet-600 text-white font-bold py-3 rounded-xl hover:bg-violet-700 shadow-lg btn-premium">LƯU THÔNG TIN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chỉnh Sửa Phụ Kiện (Edit) -->
+    <div id="modal-phu-kien-edit" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-700 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-amber-500 uppercase">Chỉnh Sửa Phụ Kiện</h3>
+                <button onclick="closeModal('modal-phu-kien-edit')" class="text-slate-500 hover:text-rose-500 font-bold">✕</button>
+            </div>
+            <div class="space-y-4">
+                <input type="hidden" id="pk-edit-id">
+                <div>
+                    <label class="text-xs font-bold text-slate-400">Mã Phụ Kiện (Code)</label>
+                    <input type="text" id="pk-edit-code" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400">Số lượng (Qty)</label>
+                    <input type="number" id="pk-edit-qty" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm" min="0">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-slate-400">Vị trí (Bin)</label>
+                    <input type="text" id="pk-edit-bin" class="w-full mt-1 p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm">
+                </div>
+                <div id="pk-edit-msg" class="text-xs font-bold text-center h-4"></div>
+                <button onclick="savePhuKienEdit()" class="w-full bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 shadow-lg btn-premium">CẬP NHẬT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xuất Kho Phụ Kiện (Outbound) -->
+    <div id="modal-phu-kien-outbound" class="modal">
+        <div class="bg-slate-900 p-6 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-700 mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-rose-500 uppercase">Xuất Kho Phụ Kiện</h3>
+                <button onclick="closeModal('modal-phu-kien-outbound')" class="text-slate-500 hover:text-rose-500 font-bold">✕</button>
+            </div>
+            <div class="space-y-4">
+                <input type="hidden" id="pk-out-id">
+                <input type="hidden" id="pk-out-max-qty">
+                <p class="text-slate-400 text-xs leading-relaxed">
+                    Bạn muốn xuất mã phụ kiện <span id="pk-out-code-text" class="text-violet-400 font-bold"></span> tại vị trí <span id="pk-out-bin-text" class="text-violet-400 font-bold"></span>?
+                </p>
+                
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="outboundPhuKienAll()" class="bg-rose-600 text-white py-3 rounded-xl text-xs font-bold hover:bg-rose-700 transition-all shadow-lg btn-premium">XUẤT HẾT</button>
+                    <button onclick="showPartialOutboundInput()" class="bg-slate-800 text-slate-300 py-3 rounded-xl text-xs font-bold hover:bg-slate-700 transition-all border border-slate-700">XUẤT 1 PHẦN</button>
+                </div>
+
+                <!-- Vùng nhập xuất 1 phần (Mặc định ẩn) -->
+                <div id="pk-out-partial-container" class="hidden border-t border-slate-800 pt-4 mt-4 space-y-3">
+                    <label class="text-xs font-bold text-slate-400">Số lượng cần xuất (Hiện có: <span id="pk-out-current-qty" class="text-amber-500"></span>)</label>
+                    <input type="number" id="pk-out-qty-input" class="w-full p-2 border border-slate-700 rounded-xl bg-slate-800 text-white outline-none font-bold text-sm" placeholder="Nhập số lượng..." min="1">
+                    <button onclick="outboundPhuKienPartial()" class="w-full bg-amber-600 text-white font-bold py-2.5 rounded-xl hover:bg-amber-700 shadow-lg btn-premium text-xs">XÁC NHẬN XUẤT</button>
+                </div>
+                <div id="pk-out-msg" class="text-xs font-bold text-center h-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== HẾT PHÂN HỆ NÂNG CẤP ==================== -->
+
+    <script>
+        const SUPABASE_URL = 'https://dhlpkycpkndfdgnbdcwn.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRobHBreWNwa25kZmRnbmJkY3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwODM2NDgsImV4cCI6MjA5NTY1OTY0OH0.aVbFpwZj6_zYlTqHYds27f9Q7brZn8Ti-0VUOFRuslE'; 
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let rawData = [];
+        let summaryData = [];
+        let chartBar, chartPie;
+
+        // Dữ liệu bộ nhớ tạm cho Hàng Phụ Kiện
+        let phuKienData = [];
+
+        window.onload = fetchData;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'success' ? 'toast-success' : 'toast-error'} animate__animated animate__fadeInRight`;
+            
+            let iconHtml = '';
+            if (window.lucide) {
+                iconHtml = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5"></i>`;
+            }
+            
+            toast.innerHTML = `${iconHtml} <span>${message}</span>`;
+            container.appendChild(toast);
+            
+            if (window.lucide) lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        async function fetchAllFromSupabase(tableName) {
+            let allData = [];
+            let from = 0;
+            const step = 1000;
+            let hasMore = true;
+
+            while (hasMore) {
+                const { data, error } = await supabaseClient.from(tableName).select('*').range(from, from + step - 1);
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    allData.push(...data);
+                    from += step;
+                }
+                if (!data || data.length < step) hasMore = false;
+            }
+            return allData;
+        }
+
+        async function fetchData() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const detailData = await fetchAllFromSupabase('vw_kho_thanh_pham');
+                const summaryRes = await supabaseClient.from('vw_summary_analysis').select('*');
+                if (summaryRes.error) throw summaryRes.error;
+
+                rawData = detailData;
+                summaryData = summaryRes.data;
+                document.getElementById('last-update').innerText = new Date().toLocaleTimeString('vi-VN');
+                initDashboard();
+                showToast("Đồng bộ dữ liệu thành công!");
+            } catch (error) {
+                console.error("Critical Error:", error);
+                showToast(`Lỗi kết nối Supabase: ${error.message}`, "error");
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function groupDataByFeature(data) {
+            let groups = {};
+            data.forEach(row => {
+                const feat = row.colB;
+                if (!groups[feat]) groups[feat] = { rows:[], sumActual: 0, sumIscala: 0, maxQty: 0 };
+                groups[feat].rows.push(row);
+                let act = Number(row.colC) || 0;
+                groups[feat].sumActual += act;
+                if (act > groups[feat].maxQty) groups[feat].maxQty = act;
+            });
+            return groups;
+        }
+
+        function renderTable(dataToRender) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            const groupedData = groupDataByFeature(dataToRender);
+
+            Object.keys(groupedData).sort().forEach(featKey => {
+                const group = groupedData[featKey];
+                let kienCount = group.maxQty > 0 ? (group.sumActual / 2) / group.maxQty : 0;
+                
+                let groupRow = document.createElement('tr');
+                groupRow.className = 'group-header';
+                groupRow.innerHTML = `
+                    <td class="px-6 py-4 font-extrabold text-cyan-400 text-xs">FEATURE: ${featKey}</td>
+                    <td class="px-4 py-4 text-[10px] font-bold text-slate-400">${kienCount.toFixed(2)} Kiện</td>
+                    <td class="px-4 py-4 font-black text-white text-right">${group.sumActual.toLocaleString()}</td>
+                    <td colspan="6"></td>`;
+                tbody.appendChild(groupRow);
+
+                group.rows.forEach(row => {
+                    let whLoc = row.colE === 'No data' ? `<span class="px-2 py-1 bg-rose-900/30 text-rose-500 rounded text-[9px] font-bold">No Data</span>` : row.colE;
+                    let detailRow = document.createElement('tr');
+                    detailRow.className = 'hover:bg-slate-800/50 border-b border-slate-800 transition-colors';
+                    detailRow.innerHTML = `
+                        <td class="px-6 py-4 text-xs text-slate-300">${row.colA}</td>
+                        <td class="px-4 py-4 text-xs text-slate-300">${row.colB}</td>
+                        <td class="px-4 py-4 text-right font-bold text-white">${Number(row.colC).toLocaleString()}</td>
+                        <td class="px-4 py-4 text-center text-slate-300">${whLoc}</td>
+                        <td class="px-4 py-4 text-xs text-slate-400">${row.colF}</td>
+                        <td class="px-4 py-4 text-[10px] text-slate-400">${row.colG}</td>
+                        <td class="px-4 py-4 text-xs font-mono text-cyan-400 font-bold">${row.colH}</td>
+                        <td class="px-4 py-4 text-xs text-slate-300">${row.colI}</td>
+                        <td class="px-4 py-4 text-center">
+                            <button onclick="openEditModal('${row.row_id}', '${row.colH}', '${row.colI}')" class="text-amber-500 p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/30 hover:bg-amber-500/20">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            </button>
+                        </td>`;
+                    tbody.appendChild(detailRow);
+                });
+            });
+        }
+
+        function updateDashboardMetrics() {
+            let totalActual = 0, totalIscala = 0, noDataCount = 0, moveCount = 0;
+            let tagFreq = {};
+            
+            rawData.forEach(r => {
+                totalActual += Number(r.colC) || 0;
+                if (r.colA === 'No data') noDataCount++;
+                if (r.colE === '62' || r.colE === '50') moveCount++;
+                if (r.colH) tagFreq[r.colH] = (tagFreq[r.colH] || 0) + 1;
+            });
+
+            summaryData.forEach(s => totalIscala += Number(s.iscala) || 0);
+            document.getElementById('kpi-total-actual').innerText = totalActual.toLocaleString();
+            document.getElementById('kpi-nodata').innerText = noDataCount;
+            document.getElementById('kpi-move').innerText = moveCount;
+            
+            let diff = totalActual - totalIscala;
+            let diffPercent = totalIscala !== 0 ? ((diff / totalIscala) * 100).toFixed(1) : 0;
+            
+            const diffEl = document.getElementById('kpi-diff');
+            const percEl = document.getElementById('kpi-diff-percent');
+            
+            diffEl.innerText = (diff > 0 ? "+" : "") + diff.toLocaleString();
+            percEl.innerText = `${diffPercent}%`;
+
+            if (diff === 0) {
+                diffEl.className = "text-3xl font-black text-emerald-400";
+                percEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-900/30 text-emerald-400";
+            } else if (Math.abs(diffPercent) < 5) {
+                diffEl.className = "text-3xl font-black text-amber-400";
+                percEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400";
+            } else {
+                diffEl.className = "text-3xl font-black text-rose-500";
+                percEl.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-900/30 text-rose-500";
+            }
+
+            let dups = Object.keys(tagFreq).filter(t => tagFreq[t] > 1);
+            document.getElementById('kpi-duplicates').innerText = dups.length;
+
+            renderAnalysisPanel(tagFreq, dups);
+        }
+
+        function renderAnalysisPanel(tagFreq, dups) {
+            const grouped = groupDataByFeature(rawData);
+            const noDataTags = rawData.filter(r => r.colA === 'No data').map(r => r.colH);
+            document.getElementById('analysis-no-data').innerHTML = noDataTags.length > 0 
+                ? noDataTags.map(t => `<div class="px-2 py-1 bg-rose-900/20 border border-rose-900/50 rounded-lg text-[10px] font-bold text-rose-400">${t}</div>`).join('') 
+                : '<span class="text-xs text-slate-500 italic">An toàn</span>';
+            const lowStock = Object.keys(grouped).filter(k => {
+                const g = grouped[k];
+                return g.maxQty > 0 && ((g.sumActual / 2) / g.maxQty) < 2 && k !== 'No data';
+            });
+            document.getElementById('analysis-low-stock').innerHTML = lowStock.length > 0 
+                ? lowStock.map(k => `<div class="px-2 py-1 bg-rose-900/20 border border-rose-900/50 rounded-lg text-[10px] font-bold text-rose-400">${k}</div>`).join('') 
+                : '<span class="text-xs text-slate-500 italic">Đủ số lượng</span>';
+            document.getElementById('analysis-duplicates').innerHTML = dups.length > 0 
+                ? dups.map(t => `<div class="px-2 py-1 bg-amber-900/20 border border-amber-900/50 rounded-lg text-[10px] font-bold text-amber-400">${t}</div>`).join('') 
+                : '<span class="text-xs text-slate-500 italic">Không trùng</span>';
+            const midStock = Object.keys(grouped).filter(k => {
+                const g = grouped[k];
+                const kien = g.maxQty > 0 ? ((g.sumActual / 2) / g.maxQty) : 0;
+                return kien >= 3 && kien <= 5 && k !== 'No data';
+            });
+            document.getElementById('analysis-mid-stock').innerHTML = midStock.length > 0 
+                ? midStock.map(k => `<div class="px-2 py-1 bg-amber-900/20 border border-amber-900/50 rounded-lg text-[10px] font-bold text-amber-400">${k}</div>`).join('') 
+                : '<span class="text-xs text-slate-500 italic">Không có</span>';
+        }
+
+        function renderCharts() {
+            const labels = [], actData = [], iscData = [], diffData = [];
+            const pieLabels = [], pieData = [];
+            
+            summaryData.sort((a,b) => a.feature.localeCompare(b.feature)).forEach(row => {
+                labels.push(row.feature);
+                actData.push(Number(row.actual) || 0);
+                iscData.push(Number(row.iscala) || 0);
+                diffData.push(Number(row.diff_percent) || 0);
+                if (row.actual !== row.iscala) {
+                    pieLabels.push(row.feature);
+                    pieData.push(Math.abs(row.actual - row.iscala));
+                }
+            });
+
+            if (chartBar) chartBar.destroy();
+            chartBar = new ApexCharts(document.querySelector("#chart-comparison"), {
+                series: [
+                    { name: 'Thực Tế (Actual)', type: 'column', data: actData },
+                    { name: 'Hệ Thống (iScala)', type: 'column', data: iscData },
+                    { name: 'Chênh Lệch %', type: 'line', data: diffData }
+                ],
+                chart: { 
+                    height: 380, 
+                    type: 'line', 
+                    toolbar: { show: true },
+                    zoom: { enabled: true },
+                    animations: { enabled: true, easing: 'easeinout', speed: 800 },
+                    foreColor: '#94a3b8'
+                },
+                stroke: { width: [0, 0, 4], curve: 'smooth' }, 
+                plotOptions: { 
+                    box: { 
+                        columnWidth: '60%', 
+                        borderRadius: 6 
+                    } 
+                },
+                colors: ['#6366f1', '#f8fafc', '#ff003c'],
+                xaxis: { categories: labels, labels: { style: { fontSize: '10px', fontWeight: 600 } } },
+                yaxis: [
+                    { 
+                        title: { text: 'Số lượng PCS', style: { fontSize: '12px', fontWeight: 700, color: '#fff' } }, 
+                        labels: { style: { fontSize: '11px', fontWeight: 600 }, formatter: (val) => val.toFixed(0) } 
+                    },
+                    { show: false }, 
+                    { 
+                        opposite: true, 
+                        title: { text: 'Tỉ lệ lệch %', style: { fontSize: '12px', fontWeight: 700, color: '#fff' } }, 
+                        labels: { style: { fontSize: '11px', fontWeight: 600 }, formatter: (val) => val + '%' }, 
+                        min: -200,
+                        max: 0,
+                    }
+                ],
+                legend: { position: 'top', horizontalAlign: 'right' },
+                tooltip: { theme: 'dark', shared: true, intersect: false }
+            });
+            chartBar.render();
+
+            const pieEmptyMsg = document.getElementById('pie-empty-msg');
+            if (pieData.length > 0) {
+                if (pieEmptyMsg) pieEmptyMsg.classList.add('hidden');
+                if (chartPie) chartPie.destroy();
+                chartPie = new ApexCharts(document.querySelector("#chart-pie-risk"), {
+                    series: pieData, labels: pieLabels, chart: { type: 'donut', height: 380, foreColor: '#94a3b8' },
+                    colors: ['#a7f3d0', '#6ee7b7', '#10b981', '#34d399', '#d1fae5'], 
+                    plotOptions: { pie: { donut: { labels: { show: true, total: { show: true, label: 'TỔNG LỆCH', color: '#fff' } } } } }
+                });
+                chartPie.render();
+            } else {
+                if (pieEmptyMsg) pieEmptyMsg.classList.remove('hidden');
+            }
+        }
+
+        async function uploadData() {
+            const fMaster = document.getElementById('file-master').files[0];
+            const statusDiv = document.getElementById('upload-status');
+            if (!fMaster) { alert('Vui lòng chọn file!'); return; }
+            statusDiv.innerHTML = 'Đang xử lý...';
+
+            try {
+                await supabaseClient.from('master_data').delete().neq('tag_id', '0');
+                Papa.parse(fMaster, {
+                    header: true, skipEmptyLines: true,
+                    complete: async function(results) {
+                        const uniqueDataMap = new Map();
+                        results.data.forEach(row => {
+                            const tag = row['BATCH']?.trim();
+                            if (tag) {
+                                uniqueDataMap.set(tag, {
+                                    tag_id: tag,
+                                    lp_no: row['Stock Code']?.trim(),
+                                    qty: parseFloat(row['Qty']) || 0,
+                                    wh_location: row['Warehouse']?.trim(),
+                                    create_date: row['CREATEDATE']?.trim()
+                                });
+                            }
+                        });
+                        const formatted = Array.from(uniqueDataMap.values());
+                        const { error } = await supabaseClient.from('master_data').insert(formatted);
+                        if (error) statusDiv.innerHTML = `<span class="text-red-500">Lỗi: ${error.message}</span>`;
+                        else {
+                            statusDiv.innerHTML = `<span class="text-emerald-500">Cập nhật thành công ${formatted.length} dòng!</span>`;
+                            setTimeout(() => { closeModal('modal-upload'); fetchData(); }, 1000);
+                        }
+                    }
+                });
+            } catch (e) { statusDiv.innerHTML = `<span class="text-red-500">Lỗi hệ thống!</span>`; }
+        }
+
+        async function uploadInboundCSV() {
+            const fInbound = document.getElementById('file-inbound').files[0];
+            const msg = document.getElementById('inbound-msg');
+            if (!fInbound) { alert('Vui lòng chọn file CSV nhập kho!'); return; }
+            msg.innerHTML = '<span class="text-blue-500">Đang tải lên...</span>';
+
+            Papa.parse(fInbound, {
+                header: true, skipEmptyLines: true,
+                complete: async function(results) {
+                    const formatted = results.data.map(row => ({
+                        tag_id: row['tagid']?.trim() || row['TAG ID']?.trim(),
+                        bin: row['bin']?.trim() || row['BIN']?.trim()
+                    })).filter(r => r.tag_id);
+                    const { error } = await supabaseClient.from('inventory').upsert(formatted);
+                    if (error) msg.innerHTML = `<span class="text-red-500">Lỗi: ${error.message}</span>`;
+                    else {
+                        msg.innerHTML = `<span class="text-emerald-500">Nhập kho thành công ${formatted.length} dòng!</span>`;
+                        fetchData();
+                    }
+                }
+            });
+        }
+
+        // NÂNG CẤP XUẤT EXCEL GỒM 2 SHEET (SHEET 1: TỒN KHO MASTER, SHEET 2: KHO PHỤ KIỆN)
+        async function exportTableToExcel() {
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) loadingEl.style.display = 'flex';
+            
+            try {
+                // --- SHEET 1: TỒN KHO THÀNH PHẨM MASTER ---
+                const exportData1 = rawData.map(row => ({
+                    "Stock Code": String(row.colA),
+                    "Feature": String(row.colB),
+                    "Actual Qty": Number(row.colC) || 0,
+                    "Warehouse": String(row.colE),
+                    "Stock Update": row.colF,
+                    "Create Date": row.colG,
+                    "Tag ID": String(row.colH),
+                    "Bin": String(row.colI)
+                }));
+                const worksheet1 = XLSX.utils.json_to_sheet(exportData1);
+                const range1 = XLSX.utils.decode_range(worksheet1['!ref']);
+                for (let R = range1.s.r + 1; R <= range1.e.r; ++R) {
+                    for (let C = range1.s.c; C <= range1.e.c; ++C) {
+                        const cell = worksheet1[XLSX.utils.encode_cell({c:C, r:R})];
+                        if (!cell) continue;
+                        if (C === 2) cell.t = 'n';
+                        else if (C === 4 || C === 5) cell.t = 's';
+                        else {
+                            cell.t = 's';
+                            if (C === 6 || C === 7) cell.z = '@';
+                        }
+                    }
+                }
+                worksheet1['!cols'] = [{wch:20},{wch:12},{wch:12},{wch:15},{wch:20},{wch:20},{wch:20},{wch:15}];
+
+                // --- SHEET 2: KHO PHỤ KIỆN (TRUY VẤN DỮ LIỆU GỐC) ---
+                const { data: pkData, error: pkError } = await supabaseClient.from('hang_phu_kien').select('*');
+                if (pkError) throw pkError;
+
+                const exportData2 = (pkData || []).map(row => ({
+                    "Mã Phụ Kiện (Code)": String(row.code || ''),
+                    "Số lượng (Qty)": Number(row.qty) || 0,
+                    "Vị trí (Bin)": String(row.bin || ''),
+                    "Ngày Tạo (Create Date)": row.created_at ? new Date(row.created_at).toLocaleString('vi-VN') : ''
+                }));
+                const worksheet2 = XLSX.utils.json_to_sheet(exportData2);
+                const range2 = XLSX.utils.decode_range(worksheet2['!ref']);
+                if (range2) {
+                    for (let R = range2.s.r + 1; R <= range2.e.r; ++R) {
+                        for (let C = range2.s.c; C <= range2.e.c; ++C) {
+                            const cell = worksheet2[XLSX.utils.encode_cell({c:C, r:R})];
+                            if (!cell) continue;
+                            if (C === 1) cell.t = 'n'; // Numeric Qty
+                            else cell.t = 's'; // Text strings
+                        }
+                    }
+                }
+                worksheet2['!cols'] = [{wch:25},{wch:15},{wch:15},{wch:25}];
+
+                // --- KHỞI TẠO WORKBOOK CHUNG ---
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, worksheet1, "Tồn Kho Thành Phẩm");
+                XLSX.utils.book_append_sheet(wb, worksheet2, "Kho Phụ Kiện");
+
+                const filename = `Inventory_Report_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                showToast("Xuất Excel hệ thống thành công (Workbook gồm 2 Sheet)!");
+            } catch (error) {
+                console.error("Lỗi xuất Excel:", error);
+                showToast(`Lỗi xuất Excel: ${error.message}`, "error");
+            } finally {
+                if (loadingEl) loadingEl.style.display = 'none';
+            }
+        }
+
+        async function saveEdit() {
+            const rowId = document.getElementById('edit-tag').getAttribute('data-row-id'); 
+            const newTag = document.getElementById('edit-tag').value;
+            const newBin = document.getElementById('edit-bin').value;
+            const msg = document.getElementById('edit-msg');
+            msg.innerHTML = '<span class="text-blue-500">Đang lưu...</span>';
+            
+            if(!rowId || rowId === 'undefined') {
+                msg.innerHTML = `<span class="text-red-500">Lỗi: Không tìm thấy ID dòng!</span>`;
+                return;
+            }
+
+            const { error } = await supabaseClient.from('inventory').update({ tag_id: newTag, bin: newBin }).eq('id', rowId);
+            
+            if (error) msg.innerHTML = `<span class="text-red-500">Lỗi: ${error.message}</span>`;
+            else {
+                msg.innerHTML = `<span class="text-emerald-500">Lưu thành công!</span>`;
+                setTimeout(() => { closeModal('modal-edit'); fetchData(); }, 800);
+            }
+        }
+
+        function openEditModal(id, tag, bin) {
+            const tagInput = document.getElementById('edit-tag');
+            tagInput.value = tag;
+            tagInput.setAttribute('data-row-id', id); 
+            document.getElementById('edit-bin').value = bin;
+            document.getElementById('edit-msg').innerText = '';
+            openModal('modal-edit');
+        }
+
+        function openModal(id) { 
+            const el = document.getElementById(id);
+            if (el) el.classList.add('active'); 
+        }
+        function closeModal(id) { 
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('active'); 
+        }
+
+        function showCustomConfirm(message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('modal-confirm');
+                document.getElementById('confirm-msg').innerText = message;
+                modal.classList.add('active');
+
+                document.getElementById('btn-confirm-yes').onclick = () => {
+                    modal.classList.remove('active');
+                    resolve(true);
+                };
+                document.getElementById('btn-confirm-no').onclick = () => {
+                    modal.classList.remove('active');
+                    resolve(false);
+                };
+            });
+        }
+
+        document.getElementById('inbound-tag').addEventListener('keydown', async function(e) {
+            if(e.key === 'Enter') {
+                const bin = document.getElementById('inbound-bin').value;
+                const tag = this.value;
+                if(!bin || !tag) return;
+
+                const { data: existingData, error: searchError } = await supabaseClient
+                    .from('inventory')
+                    .select('tag_id, bin')
+                    .eq('tag_id', tag)
+                    .maybeSingle();
+
+                if (searchError) {
+                    alert("Lỗi hệ thống khi kiểm tra Tag ID!");
+                    return;
+                }
+
+                if (existingData) {
+                    const confirmUpdate = await showCustomConfirm(`Tag ID ${tag} đã tồn tại tại vị trí ${existingData.bin}.\n\nBạn có muốn THAY ĐỔI vị trí sang ${bin} không?`);
+                    
+                    if (confirmUpdate) {
+                        const { error } = await supabaseClient.from('inventory').update({ bin: bin }).eq('tag_id', tag);
+                        if (error) alert(error.message); else { this.value = ''; fetchData(); }
+                    } else {
+                        const { error } = await supabaseClient.from('inventory').insert([{ tag_id: tag, bin: bin }]);
+                        if (error) alert(error.message); else { this.value = ''; fetchData(); }
+                    }
+                } else {
+                    const { error } = await supabaseClient.from('inventory').insert([{ tag_id: tag, bin: bin }]);
+                    if (error) alert(error.message); else { this.value = ''; fetchData(); }
+                }
+            }
+        });
+
+        document.getElementById('outbound-tag').addEventListener('keydown', async function(e) {
+            if(e.key === 'Enter') {
+                const tag = this.value;
+                if(!tag) return;
+
+                const { data: results, error: searchError } = await supabaseClient
+                    .from('inventory')
+                    .select('id, bin')
+                    .eq('tag_id', tag);
+
+                if (searchError) {
+                    alert("Lỗi hệ thống khi kiểm tra dữ liệu!");
+                    return;
+                }
+
+                if (!results || results.length === 0) {
+                    alert("Không tìm thấy Tag ID này trong hệ thống!");
+                    return;
+                }
+
+                if (results.length === 1) {
+                    const { error } = await supabaseClient.from('inventory').delete().eq('id', results[0].id);
+                    if (error) alert(error.message); else { this.value = ''; fetchData(); }
+                } else {
+                    const listDiv = document.getElementById('bin-selection-list');
+                    listDiv.innerHTML = '';
+                    
+                    results.forEach(row => {
+                        const btn = document.createElement('button');
+                        btn.className = "w-full flex justify-between items-center p-3 bg-slate-800 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold transition-all border border-slate-700";
+                        btn.innerHTML = `<span>Vị trí: <span class="text-indigo-300">${row.bin || 'N/A'}</span></span> <span class="text-[10px] opacity-50">${row.id.substring(0,8)}...</span>`;
+                        btn.onclick = async () => {
+                            const { error } = await supabaseClient.from('inventory').delete().eq('id', row.id);
+                            if (error) alert(error.message); else { 
+                                closeModal('modal-select-bin');
+                                this.value = ''; 
+                                fetchData(); 
+                            }
+                        };
+                        listDiv.appendChild(btn);
+                    });
+                    openModal('modal-select-bin');
+                }
+            }
+        });
+
+        document.getElementById('filter-input').addEventListener('input', (e) => {
+            const kw = e.target.value.toLowerCase().trim();
+            if (!kw) { renderTable(rawData); return; }
+
+            const filtered = rawData.filter(r => {
+                return (
+                    String(r.colB).toLowerCase().includes(kw) || 
+                    String(r.colI).toLowerCase().includes(kw) || 
+                    String(r.colE).toLowerCase().includes(kw) || 
+                    String(r.colH).toLowerCase().includes(kw) || 
+                    String(r.colA).toLowerCase().includes(kw)    
+                );
+            });
+            renderTable(filtered);
+        });
+
+        function initDashboard() {
+            updateDashboardMetrics();
+            renderTable(rawData);
+            renderCharts();
+        }
+
+        // ==================== JAVASCRIPT: LOGIC QUẢN LÝ HÀNG PHỤ KIỆN (CHUẨN HÓA) ====================
+
+        // Mở cửa sổ quản lý phụ kiện
+        async function openPhuKienModal() {
+            openModal('modal-phu-kien');
+            await fetchPhuKienData();
+        }
+
+        // Tải dữ liệu phụ kiện từ bảng hang_phu_kien (không dấu) trên Supabase
+        async function fetchPhuKienData() {
+            try {
+                const { data, error } = await supabaseClient.from('hang_phu_kien').select('*');
+                if (error) throw error;
+                phuKienData = data || [];
+                renderPhuKienTable(phuKienData);
+            } catch (err) {
+                console.error("Lỗi lấy dữ liệu hàng phụ kiện:", err);
+                showToast(`Lỗi lấy dữ liệu phụ kiện: ${err.message}`, "error");
+            }
+        }
+
+        // Đổ dữ liệu phụ kiện lên bảng
+        function renderPhuKienTable(dataToRender) {
+            const tbody = document.getElementById('phu-kien-table-body');
+            if (tbody) {
+                tbody.innerHTML = '';
+                
+                if (dataToRender.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-500 italic text-xs">Không có dữ liệu phụ kiện phù hợp.</td></tr>`;
+                    return;
+                }
+
+                dataToRender.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-800/50 border-b border-slate-800/80 transition-colors';
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 text-xs font-bold text-slate-300">${row.code || ''}</td>
+                        <td class="px-4 py-4 text-right font-bold text-violet-400">${(Number(row.qty) || 0).toLocaleString()}</td>
+                        <td class="px-4 py-4 text-center text-slate-300 font-mono text-xs">${row.bin || ''}</td>
+                        <td class="px-6 py-4 text-center flex justify-center gap-2">
+                            <button onclick="openPhuKienEditModal('${row.id}', '${row.code}', ${row.qty}, '${row.bin}')" 
+                                    class="text-amber-500 p-1.5 bg-amber-500/10 rounded-lg border border-amber-500/30 hover:bg-amber-500/20 text-xs font-bold transition-all flex items-center gap-1">
+                                Sửa
+                            </button>
+                            <button onclick="openPhuKienOutboundModal('${row.id}', '${row.code}', ${row.qty}, '${row.bin}')" 
+                                    class="text-rose-500 p-1.5 bg-rose-500/10 rounded-lg border border-rose-500/30 hover:bg-rose-500/20 text-xs font-bold transition-all flex items-center gap-1">
+                                Xuất
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        // Lọc thông minh dữ liệu phụ kiện theo Bin hoặc Code
+        const pkFilterInput = document.getElementById('phu-kien-filter');
+        if (pkFilterInput) {
+            pkFilterInput.addEventListener('input', (e) => {
+                const kw = e.target.value.toLowerCase().trim();
+                if (!kw) {
+                    renderPhuKienTable(phuKienData);
+                    return;
+                }
+                const filtered = phuKienData.filter(r => {
+                    return (
+                        String(r.code).toLowerCase().includes(kw) ||
+                        String(r.bin).toLowerCase().includes(kw)
+                    );
+                });
+                renderPhuKienTable(filtered);
+            });
+        }
+
+        // Nhập kho phụ kiện (Lưu thời gian thực)
+        async function savePhuKienInbound() {
+            const code = document.getElementById('pk-in-code').value.trim();
+            const qtyStr = document.getElementById('pk-in-qty').value.trim();
+            const bin = document.getElementById('pk-in-bin').value.trim();
+            const msg = document.getElementById('pk-in-msg');
+            
+            if (!code || !qtyStr || !bin) {
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Vui lòng điền đủ thông tin!</span>`;
+                return;
+            }
+            const qty = Number(qtyStr);
+            if (isNaN(qty) || qty <= 0) {
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Số lượng phải lớn hơn 0!</span>`;
+                return;
+            }
+            
+            if (msg) msg.innerHTML = '<span class="text-blue-500">Đang lưu...</span>';
+            try {
+                // Kiểm tra trùng mã code + vị trí bin để cộng dồn
+                const { data: existing, error: findErr } = await supabaseClient
+                    .from('hang_phu_kien')
+                    .select('*')
+                    .eq('code', code)
+                    .eq('bin', bin)
+                    .maybeSingle();
+                
+                if (findErr) throw findErr;
+                
+                if (existing) {
+                    const newQty = (Number(existing.qty) || 0) + qty;
+                    const { error: updErr } = await supabaseClient
+                        .from('hang_phu_kien')
+                        .update({ qty: newQty })
+                        .eq('id', existing.id);
+                    if (updErr) throw updErr;
+                } else {
+                    const { error: insErr } = await supabaseClient
+                        .from('hang_phu_kien')
+                        .insert([{ code, qty, bin }]);
+                    if (insErr) throw insErr;
+                }
+                
+                if (msg) msg.innerHTML = `<span class="text-emerald-500">Lưu thành công!</span>`;
+                setTimeout(() => {
+                    closeModal('modal-phu-kien-inbound');
+                    document.getElementById('pk-in-code').value = '';
+                    document.getElementById('pk-in-qty').value = '';
+                    document.getElementById('pk-in-bin').value = '';
+                    if (msg) msg.innerHTML = '';
+                    fetchPhuKienData();
+                }, 800);
+                showToast("Nhập phụ kiện thành công!");
+            } catch (err) {
+                console.error(err);
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Lỗi: ${err.message}</span>`;
+            }
+        }
+
+        // Mở modal Chỉnh sửa Phụ Kiện
+        function openPhuKienEditModal(id, code, qty, bin) {
+            document.getElementById('pk-edit-id').value = id;
+            document.getElementById('pk-edit-code').value = code;
+            document.getElementById('pk-edit-qty').value = qty;
+            document.getElementById('pk-edit-bin').value = bin;
+            const msg = document.getElementById('pk-edit-msg');
+            if (msg) msg.innerHTML = '';
+            openModal('modal-phu-kien-edit');
+        }
+
+        // Lưu thông tin sau khi sửa
+        async function savePhuKienEdit() {
+            const id = document.getElementById('pk-edit-id').value;
+            const code = document.getElementById('pk-edit-code').value.trim();
+            const qtyStr = document.getElementById('pk-edit-qty').value.trim();
+            const bin = document.getElementById('pk-edit-bin').value.trim();
+            const msg = document.getElementById('pk-edit-msg');
+            
+            if (!code || !qtyStr || !bin) {
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Vui lòng điền đủ thông tin!</span>`;
+                return;
+            }
+            const qty = Number(qtyStr);
+            if (isNaN(qty) || qty < 0) {
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Số lượng không hợp lệ!</span>`;
+                return;
+            }
+
+            if (msg) msg.innerHTML = '<span class="text-blue-500">Đang cập nhật...</span>';
+            try {
+                const { error } = await supabaseClient
+                    .from('hang_phu_kien')
+                    .update({ code, qty, bin })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                if (msg) msg.innerHTML = `<span class="text-emerald-500">Cập nhật thành công!</span>`;
+                setTimeout(() => {
+                    closeModal('modal-phu-kien-edit');
+                    fetchPhuKienData();
+                }, 800);
+                showToast("Cập nhật phụ kiện thành công!");
+            } catch (err) {
+                console.error(err);
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Lỗi: ${err.message}</span>`;
+            }
+        }
+
+        // Mở cửa sổ xuất kho phụ kiện
+        function openPhuKienOutboundModal(id, code, qty, bin) {
+            document.getElementById('pk-out-id').value = id;
+            document.getElementById('pk-out-max-qty').value = qty;
+            document.getElementById('pk-out-code-text').innerText = code;
+            document.getElementById('pk-out-bin-text').innerText = bin;
+            document.getElementById('pk-out-current-qty').innerText = qty;
+            document.getElementById('pk-out-qty-input').value = '';
+            const msg = document.getElementById('pk-out-msg');
+            if (msg) msg.innerHTML = '';
+            
+            const partialContainer = document.getElementById('pk-out-partial-container');
+            if (partialContainer) partialContainer.classList.add('hidden');
+            openModal('modal-phu-kien-outbound');
+        }
+
+        // Hiện ô nhập cho chế độ xuất 1 phần
+        function showPartialOutboundInput() {
+            const partialContainer = document.getElementById('pk-out-partial-container');
+            if (partialContainer) partialContainer.classList.remove('hidden');
+        }
+
+        // Chế độ: Xuất Hết
+        async function outboundPhuKienAll() {
+            const id = document.getElementById('pk-out-id').value;
+            const msg = document.getElementById('pk-out-msg');
+            if (msg) msg.innerHTML = '<span class="text-blue-500">Đang xử lý...</span>';
+            
+            try {
+                const { error } = await supabaseClient
+                    .from('hang_phu_kien')
+                    .delete()
+                    .eq('id', id);
+                if (error) throw error;
+                
+                if (msg) msg.innerHTML = `<span class="text-emerald-500">Đã xuất hết toàn bộ!</span>`;
+                setTimeout(() => {
+                    closeModal('modal-phu-kien-outbound');
+                    fetchPhuKienData();
+                }, 800);
+                showToast("Xuất kho toàn phần thành công!");
+            } catch (err) {
+                console.error(err);
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Lỗi: ${err.message}</span>`;
+            }
+        }
+
+        // Chế độ: Xuất một phần
+        async function outboundPhuKienPartial() {
+            const id = document.getElementById('pk-out-id').value;
+            const maxQty = Number(document.getElementById('pk-out-max-qty').value);
+            const outQtyStr = document.getElementById('pk-out-qty-input').value.trim();
+            const msg = document.getElementById('pk-out-msg');
+            
+            if (!outQtyStr) {
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Vui lòng nhập số lượng xuất!</span>`;
+                return;
+            }
+            const outQty = Number(outQtyStr);
+            if (isNaN(outQty) || outQty <= 0) {
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Số lượng xuất không hợp lệ!</span>`;
+                return;
+            }
+            if (outQty > maxQty) {
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Số lượng xuất lớn hơn số lượng tồn!</span>`;
+                return;
+            }
+
+            if (msg) msg.innerHTML = '<span class="text-blue-500">Đang xử lý...</span>';
+            try {
+                if (outQty === maxQty) {
+                    const { error } = await supabaseClient
+                        .from('hang_phu_kien')
+                        .delete()
+                        .eq('id', id);
+                    if (error) throw error;
+                } else {
+                    const remaining = maxQty - outQty;
+                    const { error } = await supabaseClient
+                        .from('hang_phu_kien')
+                        .update({ qty: remaining })
+                        .eq('id', id);
+                    if (error) throw error;
+                }
+                
+                if (msg) msg.innerHTML = `<span class="text-emerald-500">Xuất kho thành công!</span>`;
+                setTimeout(() => {
+                    closeModal('modal-phu-kien-outbound');
+                    fetchPhuKienData();
+                }, 800);
+                showToast("Xuất một phần phụ kiện thành công!");
+            } catch (err) {
+                console.error(err);
+                if (msg) msg.innerHTML = `<span class="text-rose-500">Lỗi: ${err.message}</span>`;
+            }
+        }
+    </script>
+</body>
+<footer class="fixed bottom-4 left-0 w-full text-center pointer-events-none">
+    <p class="text-[10px] font-futuristic text-slate-500 uppercase tracking-[0.2em] opacity-50 hover:opacity-100 transition-opacity duration-500">
+        Engineered by Vinh © 2026 | Data Analytics and Management System. 
+    </p>
+</footer>
+</html>
