@@ -96,7 +96,6 @@
         .modal.active { display: flex; animation: modalZoom 0.3s ease-out; }
         @keyframes modalZoom { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-        /* NÂNG CẤP: Modal thông báo toàn cục nằm trên mọi modal khác */
         #modal-global-notify { 
             z-index: 11000 !important; 
             background: rgba(0, 0, 0, 0.6);
@@ -343,7 +342,6 @@
                                 <td class="px-4 py-4 font-black text-slate-800 text-right">{{ group.sumActual.toLocaleString() }}</td>
                                 <td colspan="6"></td>
                             </tr>
-                            <!-- NÂNG CẤP: Sử dụng v-memo để triệt tiêu lag khi render bảng lớn -->
                             <tr v-for="row in group.rows" :key="row.row_id" v-memo="[row.row_id, filterKw]" class="hover:bg-indigo-50/30 border-b border-slate-100 transition-colors">
                                 <td class="px-6 py-4 text-xs text-slate-500">{{ row.colA }}</td>
                                 <td class="px-4 py-4 text-xs text-slate-500">{{ row.colB }}</td>
@@ -436,6 +434,7 @@
                 <div class="space-y-4">
                     <div class="p-4 border-2 border-dashed border-indigo-100 rounded-2xl bg-indigo-50/30">
                         <label class="block text-xs font-bold text-indigo-600 mb-2">File: Stock Balance With Batch.csv</label>
+                        <!-- SỬA LỖI: Dùng ref="fileMaster" và đảm bảo JS gọi đúng ref này -->
                         <input type="file" ref="fileMaster" accept=".csv" class="text-xs w-full text-slate-400">
                         <p class="text-[10px] text-slate-500 mt-2">Xóa toàn bộ dữ liệu cũ & cập nhật mới.</p>
                     </div>
@@ -617,7 +616,6 @@
         createApp({
             setup() {
                 const loading = ref(true);
-                // NÂNG CẤP: Sử dụng shallowRef cho mảng lớn để triệt tiêu lag
                 const rawData = shallowRef([]);
                 const summaryData = shallowRef([]);
                 const lastUpdate = ref('--:--');
@@ -647,6 +645,10 @@
                 const editMsg = ref('');
                 const selectBinList = ref([]);
                 const quickOutTarget = ref(null);
+
+                // Refs for file inputs (SỬA LỖI TẠI ĐÂY)
+                const fileMaster = ref(null);
+                const fileInbound = ref(null);
 
                 const pkData = ref([]);
                 const pkFilter = ref('');
@@ -739,7 +741,6 @@
                     try {
                         const detailRes = await supabaseClient.from('vw_kho_thanh_pham').select('*');
                         const summaryRes = await supabaseClient.from('vw_summary_analysis').select('*');
-                        // Sử dụng .value cho shallowRef
                         rawData.value = detailRes.data || [];
                         summaryData.value = summaryRes.data || [];
                         lastUpdate.value = new Date().toLocaleTimeString('vi-VN');
@@ -884,7 +885,7 @@
                 };
 
                 const uploadInboundCSV = async () => {
-                    const file = document.querySelector('#file-inbound').files[0];
+                    const file = fileInbound.value.files[0];
                     if (!file) {
                         await customAlert('Thiếu file', 'Vui lòng chọn file CSV để nhập kho!');
                         return;
@@ -903,31 +904,59 @@
                     });
                 };
 
+                // --- SỬA LỖI MODULE CẬP NHẬT NGUỒN TẠI ĐÂY ---
                 const uploadData = async () => {
-                    const file = document.querySelector('#file-master').files[0];
+                    const file = fileMaster.value.files[0]; // Sử dụng ref đúng
                     if (!file) {
                         await customAlert('Thiếu file', 'Vui lòng chọn file CSV nguồn!');
                         return;
                     }
                     uploadStatus.value = 'Đang xử lý...';
                     try {
-                        await supabaseClient.from('master_data').delete().neq('tag_id', '0');
+                        // 1. Xóa toàn bộ dữ liệu cũ trong bảng master_data
+                        // Dùng .neq('tag_id', '0') là mẹo để xóa hết vì Supabase yêu cầu filter
+                        const { error: delError } = await supabaseClient.from('master_data').delete().neq('tag_id', '0');
+                        if (delError) throw delError;
+
+                        // 2. Parse file CSV và convert định dạng
                         Papa.parse(file, {
                             header: true,
+                            skipEmptyLines: true,
                             complete: async (results) => {
-                                const formatted = results.data.map(row => ({
-                                    tag_id: row['BATCH']?.trim(),
-                                    lp_no: row['Stock Code']?.trim(),
-                                    qty: parseFloat(row['Qty']) || 0,
-                                    wh_location: row['Warehouse']?.trim(),
-                                    create_date: row['CREATEDATE']?.trim()
-                                })).filter(r => r.tag_id);
-                                await supabaseClient.from('master_data').insert(formatted);
-                                uploadStatus.value = 'Thành công!';
-                                setTimeout(() => { closeModal('modal-upload'); fetchData(); }, 1000);
+                                try {
+                                    const formatted = results.data.map(row => ({
+                                        tag_id: row['BATCH']?.trim() || row['Batch']?.trim(),
+                                        lp_no: row['Stock Code']?.trim() || row['Stock Code']?.trim(),
+                                        qty: parseFloat(row['Qty']) || 0,
+                                        wh_location: row['Warehouse']?.trim() || row['Warehouse']?.trim(),
+                                        create_date: row['CREATEDATE']?.trim() || row['CreateDate']?.trim()
+                                    })).filter(r => r.tag_id);
+
+                                    if (formatted.length === 0) {
+                                        uploadStatus.value = 'File không có dữ liệu hợp lệ!';
+                                        return;
+                                    }
+
+                                    // 3. Update dữ liệu mới vào bảng master_data
+                                    const { error: insError } = await supabaseClient.from('master_data').insert(formatted);
+                                    if (insError) throw insError;
+
+                                    uploadStatus.value = 'Thành công!';
+                                    showToast(`Đã cập nhật ${formatted.length} dòng dữ liệu nguồn!`);
+                                    setTimeout(() => { 
+                                        closeModal('modal-upload'); 
+                                        fetchData(); 
+                                    }, 1000);
+                                } catch (e) {
+                                    uploadStatus.value = 'Lỗi ghi dữ liệu!';
+                                    console.error(e);
+                                }
                             }
                         });
-                    } catch (e) { uploadStatus.value = 'Lỗi hệ thống!'; }
+                    } catch (e) { 
+                        uploadStatus.value = 'Lỗi hệ thống!'; 
+                        console.error(e);
+                    }
                 };
 
                 const handleOutboundEnter = async () => {
@@ -1089,7 +1118,8 @@
                     openPhuKienModal, pkFilter, pkIn, pkInMsg, savePkInbound,
                     pkEdit, pkEditMsg, openPhuKienEdit, savePkEdit,
                     pkOut, pkOutQty, pkOutPartial, pkOutMsg, openPhuKienOut, pkOutAll, pkOutPartialSubmit,
-                    globalNotify, handleGlobalResponse
+                    globalNotify, handleGlobalResponse,
+                    fileMaster, fileInbound // Export refs để Vue nhận diện
                 };
             }
         }).mount('#app');
