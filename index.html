@@ -23,6 +23,7 @@
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
+            /* Đảm bảo file wallpaper4k.png nằm cùng thư mục với index.html trên GitHub */
             background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.9)), 
                               url('wallpaper4k.png'); 
             background-size: cover;
@@ -111,6 +112,16 @@
             border-color: currentColor;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+
+        /* Hiệu ứng đung đưa cho Logo */
+        @keyframes sway {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        .animate-sway {
+            animation: sway 3s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
     </style>
 </head>
 <body class="p-4 md:p-6 pb-20 max-w-[1600px] mx-auto">
@@ -125,11 +136,18 @@
 
         <header class="sticky-header-light p-4 md:p-6 mb-10 flex flex-col md:flex-row justify-between items-start md:items-center">
             <div class="flex items-center gap-4 mb-4 md:mb-0">
-                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white">
-                        <path d="M3 17H21V19H3V17Z" fill="currentColor"/>
-                        <rect x="4" y="7" width="16" height="10" rx="2" fill="white" fill-opacity="0.3"/>
-                        <path d="M8 7V17M16 7V17M4 12H20" stroke="white" stroke-width="1.5"/>
+                <!-- LOGO NÂNG CẤP: To hơn, không nền, đung đưa, màu gỗ/xanh lá -->
+                <div class="animate-sway w-16 h-16">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md">
+                        <!-- Pallet (Xám gỗ) -->
+                        <path d="M3 17H21V19H3V17Z" fill="#94a3b8"/>
+                        <path d="M5 19H7V21H5V19ZM10 19H12V21H10V19ZM15 19H17V21H15V19ZM19 19H21V21H19V19Z" fill="#64748b"/>
+                        <!-- Thùng hàng (Vàng Gỗ) -->
+                        <rect x="4" y="6" width="16" height="11" rx="1" fill="#facc15" stroke="#ca8a04" stroke-width="1"/>
+                        <!-- Đai siết (Xanh Lá) -->
+                        <path d="M8 6V17" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M16 6V17" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M4 11H20" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                 </div>
                 <div>
@@ -333,8 +351,7 @@
             </div>
         </div>
 
-        <!-- MODALS -->
-        <!-- Modal Xuất Nhanh (Quick Outbound) -->
+        <!-- MODALS (Giữ nguyên cấu trúc) -->
         <div id="modal-quick-out" class="modal">
             <div class="bg-white p-8 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-200 mx-4 text-center">
                 <div class="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-600">
@@ -352,7 +369,6 @@
             </div>
         </div>
 
-        <!-- (Các Modal cũ: Inbound, Outbound, Upload, Edit giữ nguyên logic nhưng cập nhật UI Light) -->
         <div id="modal-inbound" class="modal">
             <div class="bg-white p-6 rounded-3xl w-full max-w-[450px] shadow-2xl border border-slate-200 mx-4">
                 <div class="flex justify-between items-center mb-6">
@@ -447,7 +463,7 @@
             </div>
         </div>
 
-        <!-- Phân hệ Phụ Kiện (Giữ nguyên logic nhưng update UI Light) -->
+        <!-- Phụ Kiện (Giữ nguyên) -->
         <div id="modal-phu-kien" class="modal">
             <div class="bg-white p-6 rounded-3xl w-full max-w-[1000px] h-[85vh] flex flex-col shadow-2xl border border-slate-200 mx-4 overflow-hidden relative">
                 <div class="flex justify-between items-center mb-6">
@@ -489,7 +505,7 @@
             </div>
         </div>
 
-        <!-- Phụ kiện Inbound/Edit/Out Modals (Update UI Light) -->
+        <!-- Phụ kiện Modals (Giữ nguyên) -->
         <div id="modal-phu-kien-inbound" class="modal">
             <div class="bg-white p-6 rounded-3xl w-full max-w-[400px] shadow-2xl border border-slate-200 mx-4">
                 <div class="flex justify-between items-center mb-6">
@@ -580,7 +596,6 @@
 
         createApp({
             setup() {
-                // State
                 const loading = ref(true);
                 const rawData = ref([]);
                 const summaryData = ref([]);
@@ -590,7 +605,6 @@
                 const kpi = reactive({ totalActual: 0, diff: 0, diffPercent: '0%', noData: 0, move: 0, duplicates: 0 });
                 const analysis = reactive({ noData: [], lowStock: [], duplicates: [], midStock: [] });
                 
-                // Modal States
                 const inboundBin = ref('');
                 const inboundTag = ref('');
                 const inboundMsg = ref('');
@@ -603,7 +617,6 @@
                 const selectBinList = ref([]);
                 const quickOutTarget = ref(null);
 
-                // Phụ kiện State
                 const pkData = ref([]);
                 const pkFilter = ref('');
                 const pkIn = reactive({ code: '', qty: 0, bin: '' });
@@ -617,13 +630,11 @@
 
                 let chartBar = null, chartPie = null;
 
-                // Computed
                 const groupedData = computed(() => {
                     const filtered = rawData.value.filter(r => {
                         const kw = filterKw.value.toLowerCase();
                         return !kw || [r.colA, r.colB, r.colE, r.colH, r.colI].some(val => String(val).toLowerCase().includes(kw));
                     });
-                    
                     const groups = {};
                     filtered.forEach(row => {
                         const feat = row.colB;
@@ -636,17 +647,13 @@
                     return groups;
                 });
 
-                const hasDiffData = computed(() => {
-                    return summaryData.value.some(row => row.actual !== row.iscala);
-                });
-
+                const hasDiffData = computed(() => summaryData.value.some(row => row.actual !== row.iscala));
                 const filteredPkData = computed(() => {
                     if (!pkFilter.value) return pkData.value;
                     const kw = pkFilter.value.toLowerCase();
                     return pkData.value.filter(r => String(r.code).toLowerCase().includes(kw) || String(r.bin).toLowerCase().includes(kw));
                 });
 
-                // Methods
                 const showToast = (message, type = 'success') => {
                     const container = document.getElementById('toast-container');
                     const toast = document.createElement('div');
@@ -656,28 +663,22 @@
                     setTimeout(() => toast.remove(), 4000);
                 };
 
-                const calculateKien = (group) => {
-                    return group.maxQty > 0 ? ((group.sumActual / 2) / group.maxQty).toFixed(2) : 0;
-                };
+                const calculateKien = (group) => group.maxQty > 0 ? ((group.sumActual / 2) / group.maxQty).toFixed(2) : 0;
 
                 const openModal = (id) => {
                     document.getElementById(id).classList.add('active');
                     nextTick(() => lucide.createIcons());
                 };
-                const closeModal = (id) => {
-                    document.getElementById(id).classList.remove('active');
-                };
+                const closeModal = (id) => document.getElementById(id).classList.remove('active');
 
                 const fetchData = async () => {
                     loading.value = true;
                     try {
                         const detailRes = await supabaseClient.from('vw_kho_thanh_pham').select('*');
                         const summaryRes = await supabaseClient.from('vw_summary_analysis').select('*');
-                        
                         rawData.value = detailRes.data || [];
                         summaryData.value = summaryRes.data || [];
                         lastUpdate.value = new Date().toLocaleTimeString('vi-VN');
-                        
                         updateMetrics();
                         renderCharts();
                         showToast("Đã đồng bộ dữ liệu thành công!");
@@ -692,30 +693,23 @@
                 const updateMetrics = () => {
                     let totalAct = 0, totalIsc = 0, noDataC = 0, moveC = 0;
                     const tagFreq = {};
-                    
                     rawData.value.forEach(r => {
                         totalAct += Number(r.colC) || 0;
                         if (r.colA === 'No data') noDataC++;
                         if (r.colE === '62' || r.colE === '50') moveC++;
                         if (r.colH) tagFreq[r.colH] = (tagFreq[r.colH] || 0) + 1;
                     });
-
                     summaryData.value.forEach(s => totalIsc += Number(s.iscala) || 0);
-                    
                     const diff = totalAct - totalIsc;
                     const diffPercent = totalIsc !== 0 ? ((diff / totalIsc) * 100).toFixed(1) : '0';
-                    
                     kpi.totalActual = totalAct;
                     kpi.diff = diff;
                     kpi.diffPercent = diffPercent + '%';
                     kpi.noData = noDataC;
                     kpi.move = moveC;
                     kpi.duplicates = Object.keys(tagFreq).filter(t => tagFreq[t] > 1).length;
-
-                    // Analysis Panel
                     analysis.noData = rawData.value.filter(r => r.colA === 'No data').map(r => r.colH);
                     analysis.duplicates = Object.keys(tagFreq).filter(t => tagFreq[t] > 1);
-                    
                     const groups = {};
                     rawData.value.forEach(row => {
                         const feat = row.colB;
@@ -723,7 +717,6 @@
                         groups[feat].sum += Number(row.colC) || 0;
                         if (Number(row.colC) > groups[feat].max) groups[feat].max = Number(row.colC);
                     });
-
                     analysis.lowStock = Object.keys(groups).filter(k => {
                         const g = groups[k];
                         return g.max > 0 && ((g.sum / 2) / g.max) < 2 && k !== 'No data';
@@ -744,7 +737,6 @@
                 const renderCharts = () => {
                     const labels = [], actData = [], iscData = [], diffData = [];
                     const pieLabels = [], pieData = [];
-                    
                     summaryData.value.sort((a,b) => a.feature.localeCompare(b.feature)).forEach(row => {
                         labels.push(row.feature);
                         actData.push(Number(row.actual) || 0);
@@ -755,7 +747,6 @@
                             pieData.push(Math.abs(row.actual - row.iscala));
                         }
                     });
-
                     if (chartBar) chartBar.destroy();
                     chartBar = new ApexCharts(document.querySelector("#chart-comparison"), {
                         series: [
@@ -766,7 +757,8 @@
                         chart: { height: 380, type: 'line', toolbar: { show: false }, animations: { enabled: true, speed: 800 } },
                         stroke: { width: [0, 0, 4], curve: 'smooth' },
                         plotOptions: { bar: { borderRadius: 8, columnWidth: '60%' } },
-                        colors: ['#6366f1', '#e2e8f0', '#f43f5e'],
+                        // ĐÃ THAY ĐỔI: Cột iScala sang màu Xanh lá (#10b981)
+                        colors: ['#6366f1', '#10b981', '#f43f5e'], 
                         xaxis: { categories: labels },
                         yaxis: [
                             { title: { text: 'PCS' }, labels: { formatter: v => v.toFixed(0) } },
@@ -777,7 +769,6 @@
                         legend: { position: 'top' }
                     });
                     chartBar.render();
-
                     if (chartPie) chartPie.destroy();
                     chartPie = new ApexCharts(document.querySelector("#chart-pie-risk"), {
                         series: pieData,
@@ -792,7 +783,6 @@
                     chartPie.render();
                 };
 
-                // Quick Outbound Logic
                 const quickOutbound = (row) => {
                     quickOutTarget.value = row;
                     openModal('modal-quick-out');
@@ -811,24 +801,16 @@
                     }
                 };
 
-                //- Inbound logic
                 const handleInboundEnter = async () => {
                     if (!inboundBin.value || !inboundTag.value) return;
                     const tag = inboundTag.value;
                     const bin = inboundBin.value;
-                    
                     const { data: existing } = await supabaseClient.from('inventory').select('bin').eq('tag_id', tag).maybeSingle();
-                    
                     if (existing) {
                         const confirm = window.confirm(`Tag ${tag} đang ở ${existing.bin}. Bạn muốn đổi sang ${bin}?`);
-                        if (confirm) {
-                            await supabaseClient.from('inventory').update({ bin }).eq('tag_id', tag);
-                        } else {
-                            await supabaseClient.from('inventory').insert([{ tag_id: tag, bin }]);
-                        }
-                    } else {
-                        await supabaseClient.from('inventory').insert([{ tag_id: tag, bin }]);
-                    }
+                        if (confirm) await supabaseClient.from('inventory').update({ bin }).eq('tag_id', tag);
+                        else await supabaseClient.from('inventory').insert([{ tag_id: tag, bin }]);
+                    } else await supabaseClient.from('inventory').insert([{ tag_id: tag, bin }]);
                     inboundTag.value = '';
                     fetchData();
                 };
@@ -878,10 +860,7 @@
                     const tag = outboundTag.value;
                     if (!tag) return;
                     const { data: results } = await supabaseClient.from('inventory').select('id, bin').eq('tag_id', tag);
-                    if (!results || results.length === 0) {
-                        alert("Không tìm thấy Tag!");
-                        return;
-                    }
+                    if (!results || results.length === 0) { alert("Không tìm thấy Tag!"); return; }
                     if (results.length === 1) {
                         await supabaseClient.from('inventory').delete().eq('id', results[0].id);
                         outboundTag.value = '';
@@ -903,7 +882,6 @@
                     editTag.value = row.colH;
                     editBin.value = row.colI;
                     editMsg.value = '';
-                    // Store row_id in a temp hidden place or object
                     editRowId = row.row_id;
                     openModal('modal-edit');
                 };
@@ -924,15 +902,12 @@
                     const data1 = rawData.value.map(r => ({ "Stock Code": r.colA, "Feature": r.colB, "Qty": r.colC, "Bin": r.colI, "Tag": r.colH }));
                     const ws1 = XLSX.utils.json_to_sheet(data1);
                     XLSX.utils.book_append_sheet(wb, ws1, "Tồn Kho");
-                    
                     const { data: pkres } = await supabaseClient.from('hang_phu_kien').select('*');
                     const ws2 = XLSX.utils.json_to_sheet(pkres || []);
                     XLSX.utils.book_append_sheet(wb, ws2, "Phụ Kiện");
-                    
                     XLSX.writeFile(wb, `Report_${new Date().toLocaleDateString()}.xlsx`);
                 };
 
-                // Phụ kiện Logic
                 const openPhuKienModal = async () => {
                     openModal('modal-phu-kien');
                     const { data } = await supabaseClient.from('hang_phu_kien').select('*');
@@ -978,11 +953,8 @@
                 const pkOutPartialSubmit = async () => {
                     const remaining = pkOut.qty - pkOutQty.value;
                     if (remaining < 0) return alert("Số lượng xuất lớn hơn tồn!");
-                    if (remaining === 0) {
-                        await supabaseClient.from('hang_phu_kien').delete().eq('id', pkOut.id);
-                    } else {
-                        await supabaseClient.from('hang_phu_kien').update({ qty: remaining }).eq('id', pkOut.id);
-                    }
+                    if (remaining === 0) await supabaseClient.from('hang_phu_kien').delete().eq('id', pkOut.id);
+                    else await supabaseClient.from('hang_phu_kien').update({ qty: remaining }).eq('id', pkOut.id);
                     closeModal('modal-phu-kien-outbound');
                     openPhuKienModal();
                     showToast("Xuất một phần thành công");
@@ -991,16 +963,12 @@
                 const savePkInbound = async () => {
                     pkInMsg.value = 'Đang lưu...';
                     const { data: exist } = await supabaseClient.from('hang_phu_kien').select('*').eq('code', pkIn.code).eq('bin', pkIn.bin).maybeSingle();
-                    if (exist) {
-                        await supabaseClient.from('hang_phu_kien').update({ qty: exist.qty + pkIn.qty }).eq('id', exist.id);
-                    } else {
-                        await supabaseClient.from('hang_phu_kien').insert([{ code: pkIn.code, qty: pkIn.qty, bin: pkIn.bin }]);
-                    }
+                    if (exist) await supabaseClient.from('hang_phu_kien').update({ qty: exist.qty + pkIn.qty }).eq('id', exist.id);
+                    else await supabaseClient.from('hang_phu_kien').insert([{ code: pkIn.code, qty: pkIn.qty, bin: pkIn.bin }]);
                     pkInMsg.value = 'Thành công!';
                     setTimeout(() => { closeModal('modal-phu-kien-inbound'); openPhuKienModal(); }, 800);
                 };
 
-                // KPI Color helpers
                 const kpiColor = (type) => {
                     if (type === 'diff') {
                         if (kpi.diff === 0) return 'border-emerald-500';
