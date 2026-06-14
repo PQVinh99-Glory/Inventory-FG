@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col lg:flex-row min-h-screen bg-slate-50/50">
+  <div class="flex flex-col lg:flex-row h-screen w-full overflow-hidden bg-slate-50/50">
     <!-- PrimeVue Toast Host -->
     <Toast />
     <ConfirmDialog />
@@ -12,8 +12,10 @@
       @refresh="loadAllData" 
     />
 
-    <!-- Main Content Area -->
-    <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-[1600px] mx-auto w-full">
+    <!-- Main Content wrapper -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+      <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 w-full">
+        <div class="max-w-[1600px] mx-auto w-full h-full flex flex-col">
       
       <!-- Top Title and Info Bar (Desktop only) -->
       <div class="hidden lg:flex justify-between items-center mb-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
@@ -338,12 +340,14 @@
         @outbound-partial="handleAccOutPartial"
       />
 
+      </div>
     </main>
 
     <!-- Footer Copyright -->
-    <footer class="app-footer w-full mt-auto">
+    <footer class="app-footer w-full mt-auto text-center py-3 bg-white/80 border-t border-slate-200/50 text-[10px] font-bold text-slate-400">
       ENGINEERED BY VINH © 2026 | DATA ANALYTICS SYSTEM.
     </footer>
+    </div>
   </div>
 </template>
 
