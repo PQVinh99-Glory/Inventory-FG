@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full min-h-[350px] flex flex-col justify-center items-center">
+  <div class="w-full h-[400px] flex flex-col justify-center items-center">
     <div v-if="sortedData.length === 0" class="text-slate-400 text-xs italic text-center py-20">
       Không có dữ liệu lệch (Hệ thống khớp hoàn toàn).
     </div>

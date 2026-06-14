@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full min-h-[350px]">
+  <div class="w-full h-[400px]">
     <v-chart class="w-full h-full" :option="chartOption" :autoresize="true" />
   </div>
 </template>
