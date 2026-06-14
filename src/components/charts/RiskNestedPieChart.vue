@@ -47,36 +47,39 @@ const chartOption = computed(() => {
     }
   })
 
-  // Dữ liệu cho vòng trong (Nhóm rủi ro)
-  const innerData = [
-    {
-      name: 'Lệch cao (>=5%)',
-      value: highRiskTotalDiff,
-      itemStyle: { color: '#f43f5e' } // Rose
-    },
-    {
-      name: 'Lệch thấp (<5%)',
-      value: lowRiskTotalDiff,
-      itemStyle: { color: '#fbbf24' } // Amber/Yellow
-    }
-  ].filter(d => d.value > 0) // Loại bỏ nhóm có tổng lệch = 0
+  // Distinct vivid colors for better visual reference
+  const highRiskColors = ['#ef4444', '#f97316', '#f43f5e', '#ec4899', '#d946ef', '#db2777', '#dc2626']
+  const lowRiskColors = ['#3b82f6', '#06b6d4', '#10b981', '#8b5cf6', '#14b8a6', '#6366f1', '#0ea5e9']
 
   // Dữ liệu cho vòng ngoài (Chi tiết các Feature)
-  // Đặt màu cho các feature thuộc nhóm lệch cao là các tông màu đỏ/hồng, lệch thấp là các tông màu vàng/cam
   const outerData = [
     ...highRiskFeatures.map((item, idx) => ({
       ...item,
       itemStyle: {
-        color: `hsl(350, 85%, ${65 - (idx * 5) % 25}%)` // Tông đỏ nhạt dần
+        color: highRiskColors[idx % highRiskColors.length]
       }
     })),
     ...lowRiskFeatures.map((item, idx) => ({
       ...item,
       itemStyle: {
-        color: `hsl(45, 90%, ${60 - (idx * 5) % 20}%)` // Tông vàng nhạt dần
+        color: lowRiskColors[idx % lowRiskColors.length]
       }
     }))
   ]
+
+  // Dữ liệu cho vòng trong (Nhóm rủi ro)
+  const innerData = [
+    {
+      name: 'Lệch cao (>=5%)',
+      value: highRiskTotalDiff,
+      itemStyle: { color: '#be123c' } // Dark Rose
+    },
+    {
+      name: 'Lệch thấp (<5%)',
+      value: lowRiskTotalDiff,
+      itemStyle: { color: '#1d4ed8' } // Dark Blue
+    }
+  ].filter(d => d.value > 0)
 
   return {
     tooltip: {
@@ -106,7 +109,7 @@ const chartOption = computed(() => {
         name: 'Nhóm Rủi Ro',
         type: 'pie',
         selectedMode: 'single',
-        radius: [0, '40%'],
+        radius: ['10%', '35%'],
         label: {
           position: 'inner',
           fontSize: 10,
@@ -123,10 +126,10 @@ const chartOption = computed(() => {
       {
         name: 'Chi tiết Feature',
         type: 'pie',
-        radius: ['50%', '70%'],
+        radius: ['45%', '75%'],
         labelLine: {
-          length: 15,
-          length2: 10,
+          length: 10,
+          length2: 5,
           lineStyle: {
             color: '#cbd5e1'
           }
@@ -135,7 +138,7 @@ const chartOption = computed(() => {
           formatter: '{b}',
           color: '#475569',
           fontSize: 11,
-          fontWeight: 'medium'
+          fontWeight: 'bold'
         },
         data: outerData
       }

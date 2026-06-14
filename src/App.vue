@@ -18,10 +18,10 @@
         <div class="max-w-[1600px] mx-auto w-full h-full flex flex-col">
       
       <!-- Top Title and Info Bar (Desktop only) -->
-      <div class="hidden lg:flex justify-between items-center mb-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+      <div class="hidden lg:flex justify-between items-center mb-6 bg-white/70 backdrop-blur-xl p-6 rounded-2xl border border-white/60 shadow-sm shrink-0">
         <div>
           <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">HỆ THỐNG GIÁM SÁT KHO</p>
-          <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">
+          <h1 class="text-3xl font-black bg-gradient-to-r from-slate-800 to-indigo-800 bg-clip-text text-transparent tracking-tight uppercase py-1">
             {{ currentTabName }}
           </h1>
         </div>
@@ -65,14 +65,14 @@
                 <div class="space-y-5">
                   <div>
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">
-                      Tag ID Lỗi "No Data" (Bấm để xem vị trí)
+                      Tag ID Lỗi "No Data" (Rà chuột để xem vị trí)
                     </p>
                     <div class="flex flex-wrap gap-1.5">
                       <button 
                         v-for="tag in analysis.noData" 
                         :key="tag"
-                        @click="showTagInfo(tag)" 
-                        class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg text-[10px] font-bold text-rose-600 transition-all cursor-pointer"
+                        :title="'Bins: ' + [...new Set(inventoryData.filter(r => r.tag_id === tag).map(r => r.bin))].join(', ')"
+                        class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg text-[10px] font-bold text-rose-600 transition-all cursor-help"
                       >
                         {{ tag }}
                       </button>
@@ -86,11 +86,12 @@
                     </p>
                     <div class="flex flex-wrap gap-1.5">
                       <span 
-                        v-for="feat in analysis.lowStock" 
-                        :key="feat"
-                        class="px-2.5 py-1 bg-rose-50 border border-rose-100 rounded-lg text-[10px] font-bold text-rose-500"
+                        v-for="item in analysis.lowStock" 
+                        :key="item.feat"
+                        :title="'Hiện có: ' + item.kien + ' Kiện'"
+                        class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 cursor-help border border-rose-100 rounded-lg text-[10px] font-bold text-rose-500 transition-all"
                       >
-                        {{ feat }}
+                        {{ item.feat }}
                       </span>
                       <span v-if="analysis.lowStock.length === 0" class="text-xs text-slate-400 italic">Đủ số lượng</span>
                     </div>
@@ -110,14 +111,14 @@
                 <div class="space-y-5">
                   <div>
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">
-                      Tag ID Bị Trùng trong Kho (Bấm để xem vị trí)
+                      Tag ID Bị Trùng trong Kho (Rà chuột để xem vị trí)
                     </p>
                     <div class="flex flex-wrap gap-1.5">
                       <button 
                         v-for="tag in analysis.duplicates" 
                         :key="tag"
-                        @click="showTagInfo(tag)" 
-                        class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-[10px] font-bold text-amber-600 transition-all cursor-pointer"
+                        :title="'Bins: ' + [...new Set(inventoryData.filter(r => r.tag_id === tag).map(r => r.bin))].join(', ')"
+                        class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-[10px] font-bold text-amber-600 transition-all cursor-help"
                       >
                         {{ tag }}
                       </button>
@@ -131,11 +132,12 @@
                     </p>
                     <div class="flex flex-wrap gap-1.5">
                       <span 
-                        v-for="feat in analysis.midStock" 
-                        :key="feat"
-                        class="px-2.5 py-1 bg-amber-50 border border-amber-100 rounded-lg text-[10px] font-bold text-amber-500"
+                        v-for="item in analysis.midStock" 
+                        :key="item.feat"
+                        :title="'Hiện có: ' + item.kien + ' Kiện'"
+                        class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 cursor-help border border-amber-100 rounded-lg text-[10px] font-bold text-amber-500 transition-all"
                       >
-                        {{ feat }}
+                        {{ item.feat }}
                       </span>
                       <span v-if="analysis.midStock.length === 0" class="text-xs text-slate-400 italic">Không có</span>
                     </div>
@@ -166,9 +168,9 @@
         </div>
 
         <!-- 2. TAB DETAIL INVENTORY -->
-        <div v-else-if="currentTab === 'inventory'" class="space-y-6">
+        <div v-else-if="currentTab === 'inventory'" class="flex flex-col flex-1 space-y-6">
           <!-- Control Bar for Inventory Modals -->
-          <div class="flex flex-wrap gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex flex-wrap gap-3 bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-slate-200 shadow-sm shrink-0">
             <button 
               @click="showInboundModal = true"
               class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all btn-premium-light cursor-pointer shadow-xs"
@@ -469,26 +471,6 @@ onMounted(() => {
   loadAllData()
 })
 
-// Click Tag Handler from Risk Alerts
-const showTagInfo = (tag: string) => {
-  const matches = inventoryData.value.filter(r => r.tag_id === tag)
-  if (matches.length > 0) {
-    const bins = matches.map(m => m.bin || 'Không rõ').join(', ')
-    toast.add({
-      severity: 'info',
-      summary: `Chi Tiết Tag: ${tag}`,
-      detail: `Đang ở vị trí (Bin): ${bins}`,
-      life: 5000
-    })
-  } else {
-    toast.add({
-      severity: 'warn',
-      summary: `Chi Tiết Tag: ${tag}`,
-      detail: 'Không tìm thấy vị trí của Tag này trong kho!',
-      life: 4000
-    })
-  }
-}
 
 // Inbound Submission (Manual)
 const handleInboundSubmit = async (payload: { tagId: string; bin: string; option: 'update' | 'insert' }) => {

@@ -31,14 +31,14 @@
   <!-- Main Sidebar Container -->
   <aside 
     :class="[
-      'fixed top-0 bottom-0 left-0 z-40 flex flex-col justify-between w-64 bg-white border-r border-slate-200 transition-transform lg:translate-x-0',
+      'fixed top-0 bottom-0 left-0 z-40 flex flex-col justify-between w-64 bg-white/70 backdrop-blur-xl border-r border-white/50 transition-transform lg:translate-x-0 shadow-lg shadow-indigo-100/20',
       isOpen ? 'translate-x-0' : '-translate-x-full',
       'lg:sticky lg:h-screen'
     ]"
   >
     <!-- Top Brand / Logo -->
     <div>
-      <div class="flex items-center gap-4 p-6 border-b border-slate-100">
+      <div class="flex items-center gap-4 p-6 border-b border-white/50">
         <div class="animate-sway w-12 h-12 flex-shrink-0">
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-md">
             <path d="M3 17H21V19H3V17Z" fill="#94a3b8"/>
@@ -54,9 +54,9 @@
             <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-ping"></span>
             <p class="text-[9px] font-bold text-indigo-500 tracking-wider uppercase">Inventory</p>
           </div>
-          <h1 class="text-2xl font-black text-slate-800 tracking-tight">
+          <h1 class="text-2xl font-black bg-gradient-to-r from-slate-800 to-indigo-800 bg-clip-text text-transparent tracking-tight">
             WMS <span class="text-indigo-600">FG</span>
-            <span class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full ml-1 align-middle">Pro</span>
+            <span class="text-[10px] font-bold bg-indigo-100/80 text-indigo-700 px-1.5 py-0.5 rounded-full ml-1 align-middle shadow-sm">Pro</span>
           </h1>
         </div>
       </div>
@@ -70,8 +70,8 @@
           :class="[
             'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all',
             modelValue === item.value 
-              ? 'bg-indigo-50 text-indigo-600 shadow-xs' 
-              : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+              ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' 
+              : 'text-slate-600 hover:bg-white/60 hover:text-indigo-600 hover:shadow-sm'
           ]"
         >
           <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
@@ -81,12 +81,12 @@
     </div>
 
     <!-- Bottom Info & Action -->
-    <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+    <div class="p-4 border-t border-white/50 bg-white/40">
       <!-- Sync Button -->
       <button 
         @click="$emit('refresh')"
         :disabled="loading"
-        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold shadow-xs hover:bg-slate-50 disabled:opacity-50 transition-all cursor-pointer"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white/80 backdrop-blur-sm border border-indigo-100/50 text-indigo-700 rounded-xl text-xs font-bold shadow-sm hover:bg-white disabled:opacity-50 transition-all cursor-pointer"
       >
         <RefreshCw :class="['w-4 h-4 text-slate-500', loading ? 'animate-spin' : '']" />
         <span>LÀM MỚI DỮ LIỆU</span>

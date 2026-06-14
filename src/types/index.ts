@@ -38,7 +38,7 @@ export interface KpiState {
 
 export interface AnalysisState {
   noData: string[];
-  lowStock: string[];
+  lowStock: { feat: string; kien: string }[];
   duplicates: string[];
-  midStock: string[];
+  midStock: { feat: string; kien: string }[];
 }

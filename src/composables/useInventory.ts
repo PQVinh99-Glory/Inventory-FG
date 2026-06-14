@@ -115,15 +115,15 @@ export function useInventory() {
       }
     })
 
-    const low: string[] = []
-    const mid: string[] = []
+    const low: any[] = []
+    const mid: any[] = []
 
     Object.entries(featureGroups).forEach(([feat, g]) => {
       const kien = g.max > 0 ? (g.sum / 2) / g.max : 0
       if (kien < 2) {
-        low.push(feat)
+        low.push({ feat, kien: kien.toFixed(2) })
       } else if (kien >= 3 && kien <= 5) {
-        mid.push(feat)
+        mid.push({ feat, kien: kien.toFixed(2) })
       }
     })
 
@@ -143,10 +143,9 @@ export function useInventory() {
           .eq('tag_id', tagId)
         if (error) throw error
       } else {
-        // Ghi thêm hoặc nhập mới: Insert dòng mới
         const { error } = await supabase
           .from('inventory')
-          .insert([{ tag_id: tagId, bin, source: 'manual' }])
+          .insert([{ tag_id: tagId, bin }])
         if (error) throw error
       }
       await fetchInventory()
@@ -167,8 +166,7 @@ export function useInventory() {
       for (let i = 0; i < rows.length; i += chunkSize) {
         const chunk = rows.slice(i, i + chunkSize).map(r => ({
           tag_id: r.tag_id,
-          bin: r.bin,
-          source: 'csv'
+          bin: r.bin
         }))
         const { error } = await supabase.from('inventory').insert(chunk)
         if (error) throw error

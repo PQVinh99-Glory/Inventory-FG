@@ -1,5 +1,5 @@
 <template>
-  <div class="glass-card-light p-5 flex flex-col gap-4">
+  <div class="glass-card-light p-5 flex flex-col gap-4 flex-1">
     <!-- Grid Header -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
       <div>
@@ -20,7 +20,7 @@
           <input 
             type="text" 
             v-model="quickFilterText"
-            placeholder="Tìm nhanh Bin, Tag, Feature..." 
+            placeholder="Tìm Bin, Tag, Feature, Kho (W0062)..." 
             class="w-full px-4 py-2.5 pl-9 border border-slate-200 rounded-xl text-xs outline-none bg-white text-slate-700 placeholder-slate-400 focus:ring-2 ring-indigo-400 transition-all"
           >
           <Search class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
@@ -30,8 +30,7 @@
 
     <!-- AG Grid Container -->
     <div 
-      class="ag-theme-quartz w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm"
-      style="height: 580px;"
+      class="ag-theme-quartz w-full flex-1 min-h-[500px] rounded-2xl overflow-hidden border border-slate-200 shadow-sm"
     >
       <ag-grid-vue
         class="w-full h-full"
@@ -66,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { AgGridVue } from 'ag-grid-vue3'
 import { 
   ModuleRegistry, 
@@ -129,6 +128,12 @@ const emit = defineEmits<{
 
 const quickFilterText = ref('')
 const gridApi = ref<any>(null)
+
+watch(quickFilterText, () => {
+  if (gridApi.value) {
+    gridApi.value.onFilterChanged()
+  }
+})
 
 const onGridReady = (params: GridReadyEvent) => {
   gridApi.value = params.api
@@ -264,8 +269,8 @@ const columnDefs = ref<ColDef[]>([
             <span style="font-size:10px;font-weight:700;color:#7c3aed;background:#ede9fe;padding:2px 9px;border-radius:20px;white-space:nowrap">
               ${kien}
             </span>
-            <span style="font-size:12px;font-weight:900;color:#0f172a;margin-left:auto;padding-right:8px">
-              ${total}
+            <span style="font-size:11px;font-weight:800;color:#059669;background:#d1fae5;padding:2px 9px;border-radius:20px;white-space:nowrap">
+              Tổng ${total} PCS
             </span>
           </div>
         `
@@ -378,9 +383,54 @@ const columnDefs = ref<ColDef[]>([
   },
 ])
 
+const isExternalFilterPresent = () => {
+  return quickFilterText.value.trim() !== ''
+}
+
+const doesExternalFilterPass = (node: any) => {
+  if (!node.data) return true
+  const query = quickFilterText.value.toLowerCase().trim()
+  const data = node.data
+  
+  let whQuery = ''
+  let generalQuery = query
+  if (query.startsWith('w00')) {
+    whQuery = query.replace('w00', '').trim()
+  }
+
+  if (data._rowType === 'group') {
+    if (data.feature && data.feature.toLowerCase().includes(generalQuery)) return true
+    
+    // Check if any child matches
+    const children = props.data.filter(r => r.feature === data.feature)
+    return children.some(r => {
+       if (whQuery) return r.warehouse?.includes(whQuery)
+       const text = [r.feature, r.bin, r.tag_id, r.lp_no, r.warehouse].filter(Boolean).join(' ').toLowerCase()
+       return text.includes(generalQuery)
+    })
+  }
+
+  // Data row
+  if (whQuery) {
+    return data.warehouse?.includes(whQuery)
+  }
+  
+  const searchableText = [
+    data.feature,
+    data.bin,
+    data.tag_id,
+    data.lp_no,
+    data.warehouse
+  ].filter(Boolean).join(' ').toLowerCase()
+
+  return searchableText.includes(generalQuery)
+}
+
 const gridOptions: GridOptions = {
   suppressCellFocus: true,
   suppressRowClickSelection: true,
   overlayNoRowsTemplate: '<span style="color:#94a3b8;font-size:12px;font-style:italic">Không có dữ liệu tồn kho</span>',
+  isExternalFilterPresent,
+  doesExternalFilterPass,
 }
 </script>
