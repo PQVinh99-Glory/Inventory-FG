@@ -20,13 +20,13 @@
       <!-- Top Title and Info Bar (Desktop only) -->
       <div class="hidden lg:flex justify-between items-center mb-6 bg-white/70 backdrop-blur-xl p-6 rounded-2xl border border-white/60 shadow-sm shrink-0">
         <div>
-          <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">HỆ THỐNG GIÁM SÁT KHO</p>
+          <p class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">HỆ THỐNG BÁO CÁO TỒN KHO</p>
           <h1 class="text-3xl font-black bg-gradient-to-r from-slate-800 to-indigo-800 bg-clip-text text-transparent tracking-tight uppercase py-1">
             {{ currentTabName }}
           </h1>
         </div>
         <div class="text-right">
-          <p class="text-xs font-semibold text-slate-400">Đồng bộ cuối lúc</p>
+          <p class="text-xs font-semibold text-slate-400">Đồng bộ cuối cùng lúc</p>
           <p class="text-sm font-black text-indigo-600">{{ lastSync }}</p>
         </div>
       </div>
@@ -65,7 +65,7 @@
                 <div class="space-y-5">
                   <div>
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">
-                      Tag ID Lỗi "No Data" (Rà chuột để xem vị trí)
+                      Tag ID Lỗi "No Data" 
                     </p>
                     <div class="flex flex-wrap gap-1.5">
                       <button 
@@ -111,7 +111,7 @@
                 <div class="space-y-5">
                   <div>
                     <p class="text-[10px] font-extrabold text-slate-400 uppercase mb-2">
-                      Tag ID Bị Trùng trong Kho (Rà chuột để xem vị trí)
+                      Tag ID Bị Trùng trong Kho 
                     </p>
                     <div class="flex flex-wrap gap-1.5">
                       <button 
